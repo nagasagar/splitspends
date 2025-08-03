@@ -1,0 +1,16 @@
+# SplitSpends Monorepo .gitignore  
+  
+# Backend (Spring Boot)  
+backend/target/  
+backend/.mvn/wrapper/maven-wrapper.jar  
+backend/*.log  
+  
+# Frontend (Flutter)  
+frontend/build/  
+frontend/.dart_tool/  
+frontend/.packages  
+  
+# IDE  
+.vscode/  
+.idea/  
+*.iml 
