@@ -127,6 +127,8 @@ splitspends/
   - Require status checks to pass
   - Restrict pushes to main
 
+### TODO 
+
 ### 3. Issues and Projects
 - Enable Issues in Settings
 - Create issue templates
