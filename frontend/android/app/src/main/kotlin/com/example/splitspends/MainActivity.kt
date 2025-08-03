@@ -1,4 +1,4 @@
-package com.example.splitspends_ui
+package com.example.splitspends
 
 import io.flutter.embedding.android.FlutterActivity
 

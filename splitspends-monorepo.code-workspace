@@ -27,9 +27,7 @@
             "**/.dart_tool": true,
             "**/node_modules": true,
             "**/.git": true,
-            "**/.DS_Store": true,
-            "splitspends-backend": true,
-            "splitspends_ui": true
+            "**/.DS_Store": true
         },
         "search.exclude": {
             "**/target": true,

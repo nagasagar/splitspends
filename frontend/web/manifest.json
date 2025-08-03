@@ -1,6 +1,6 @@
 {
-    "name": "splitspends_ui",
-    "short_name": "splitspends_ui",
+    "name": "splitspends",
+    "short_name": "splitspends",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
