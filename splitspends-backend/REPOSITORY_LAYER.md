@@ -109,7 +109,7 @@ List<Attachment> findNeedingThumbnailGeneration()
 
 ### **✅ Consistent Query Patterns**
 - **Find by Entity**: `findByEntityOrderByCreatedAtDesc()`
-- **Find with Pagination**: Methods include `Pageable` parameter
+- **Find with Pagination**: Methods include `payable` parameter
 - **Find by Status**: Status-specific filtering for all entities
 - **Find by Date Range**: Flexible date filtering for all time-sensitive data
 

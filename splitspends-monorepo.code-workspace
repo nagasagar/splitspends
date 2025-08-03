@@ -1,0 +1,51 @@
+{
+    "folders": [
+        {
+            "name": "SplitSpends Root",
+            "path": "."
+        },
+        {
+            "name": "Backend (Spring Boot)",
+            "path": "./backend"
+        },
+        {
+            "name": "Frontend (Flutter)",
+            "path": "./frontend"
+        },
+        {
+            "name": "Documentation",
+            "path": "./docs"
+        }
+    ],
+    "settings": {
+        "java.server.launchMode": "Standard",
+        "java.compile.nullAnalysis.mode": "automatic",
+        "spring-boot.rewrite.reconcile": true,
+        "files.exclude": {
+            "**/target": true,
+            "**/build": true,
+            "**/.dart_tool": true,
+            "**/node_modules": true,
+            "**/.git": true,
+            "**/.DS_Store": true,
+            "splitspends-backend": true,
+            "splitspends_ui": true
+        },
+        "search.exclude": {
+            "**/target": true,
+            "**/build": true,
+            "**/.dart_tool": true,
+            "**/node_modules": true
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "vscjava.vscode-java-pack",
+            "vmware.vscode-spring-boot",
+            "dart-code.flutter",
+            "dart-code.dart-code",
+            "ms-vscode.vscode-json",
+            "redhat.vscode-yaml"
+        ]
+    }
+}
