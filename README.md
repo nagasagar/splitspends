@@ -1,3 +1,18 @@
+
+
+# Requirements
+
+- **User authentication:** Sign up/in, Google SSO
+- **Email verification on signup** (pending)
+- **Groups:** Create/manage groups (e.g., trips, roommates)
+- **Expenses:** Add, edit, delete shared expenses in groups
+- **Splitting logic:** Even/uneven splits, settle-up calculations
+- **Activity feed:** Who paid what, notifications
+- **Balances:** Who owes whom and how much
+- **Security:** JWT for APIs, encrypted sensitive data
+- **Attachments:** Image upload for receipts (Cloudinary, S3, etc.)
+- **Real-time updates:** WebSocket for instant notifications
+
 # SplitSpends - Smart Expense Sharing App
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -162,8 +177,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**Dasa**
-- GitHub: [@YourGitHubUsername](https://github.com/YourGitHubUsername)
+**Nagasagar Dasa**
+- GitHub: [@nagasagar](https://github.com/nagasagar)
 - Email: your.email@example.com
 
 ## 🙏 Acknowledgments
@@ -171,6 +186,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Spring Boot community for excellent documentation
 - Flutter team for the amazing framework
 - All contributors who help make this project better
+
 
 ## 📊 Project Status
 
@@ -182,8 +198,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ Settlement system
 - 🚧 Frontend development (in progress)
 - 🚧 Real-time notifications
-- 📋 Mobile app testing
-- 📋 Deployment setup
+- 🚧 Mobile app testing
+- 🚧 Deployment setup
+- 🛠️ Email verification on signup (pending)
 
 ---
 
