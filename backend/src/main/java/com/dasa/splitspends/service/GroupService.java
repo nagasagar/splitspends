@@ -1,481 +1,219 @@
 package com.dasa.splitspends.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.dasa.splitspends.entity.Group;
 import com.dasa.splitspends.entity.User;
-import com.dasa.splitspends.repository.ExpenseRepository;
-import com.dasa.splitspends.repository.GroupRepository;
-import com.dasa.splitspends.repository.UserRepository;
+import com.dasa.splitspends.service.impl.GroupServiceImpl;
 
-@Service
-@Transactional
-public class GroupService {
-
-    @Autowired
-    private GroupRepository groupRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ExpenseRepository expenseRepository;
-
-    @Autowired
-    private UserService userService;
-
-    // ========== GROUP CREATION & MANAGEMENT ==========
+public interface GroupService {
+    /**
+     * Creates a new group.
+     * 
+     * @param name            the group name
+     * @param description     the group description
+     * @param createdByUserId the ID of the user creating the group
+     * @param privacyLevel    the privacy level of the group
+     * @param defaultCurrency the default currency for the group
+     * @return the created Group entity
+     */
+    Group createGroup(String name, String description, Long createdByUserId, Group.PrivacyLevel privacyLevel,
+            String defaultCurrency);
 
     /**
-     * Create a new group
+     * Updates group information.
+     * 
+     * @param groupId         the group ID
+     * @param name            the new group name
+     * @param description     the new description
+     * @param privacyLevel    the new privacy level
+     * @param defaultCurrency the new default currency
+     * @param updatedByUserId the ID of the user performing the update
+     * @return the updated Group entity
      */
-    public Group createGroup(String name, String description, Long createdByUserId,
-            Group.PrivacyLevel privacyLevel, String defaultCurrency) {
-        User creator = userService.getUserById(createdByUserId);
-
-        // Validate group name uniqueness (optional - depends on requirements)
-        if (groupRepository.existsByName(name)) {
-            throw new IllegalArgumentException("Group name already exists");
-        }
-
-        Group group = Group.builder()
-                .name(name)
-                .description(description)
-                .createdBy(creator)
-                .privacyLevel(privacyLevel != null ? privacyLevel : Group.PrivacyLevel.PRIVATE)
-                .defaultCurrency(defaultCurrency != null ? defaultCurrency : "USD")
-                .status(Group.GroupStatus.ACTIVE)
-                .build();
-
-        // Add creator as member and admin
-        group.addAdmin(creator);
-
-        return groupRepository.save(group);
-    }
+    Group updateGroup(Long groupId, String name, String description, Group.PrivacyLevel privacyLevel,
+            String defaultCurrency, Long updatedByUserId);
 
     /**
-     * Update group information
+     * Uploads a new image for the group.
+     * 
+     * @param groupId          the group ID
+     * @param file             the image file
+     * @param uploadedByUserId the ID of the user uploading the image
+     * @return the updated Group entity
      */
-    public Group updateGroup(Long groupId, String name, String description,
-            Group.PrivacyLevel privacyLevel, String defaultCurrency,
-            Long updatedByUserId) {
-        Group group = getGroupById(groupId);
-        User updatedBy = userService.getUserById(updatedByUserId);
-
-        // Check if user has permission to update
-        if (!group.isAdmin(updatedBy)) {
-            throw new IllegalArgumentException("Only admins can update group information");
-        }
-
-        if (name != null && !name.trim().isEmpty()) {
-            group.setName(name);
-        }
-        if (description != null) {
-            group.setDescription(description);
-        }
-        if (privacyLevel != null) {
-            group.setPrivacyLevel(privacyLevel);
-        }
-        if (defaultCurrency != null) {
-            group.setDefaultCurrency(defaultCurrency);
-        }
-
-        return groupRepository.save(group);
-    }
+    Group uploadGroupImage(Long groupId, MultipartFile file, Long uploadedByUserId);
 
     /**
-     * Upload group image
+     * Adds members to a group.
+     * 
+     * @param groupId       the group ID
+     * @param userIds       the list of user IDs to add
+     * @param addedByUserId the ID of the user adding members
+     * @return the updated Group entity
      */
-    public Group uploadGroupImage(Long groupId, MultipartFile file, Long uploadedByUserId) {
-        Group group = getGroupById(groupId);
-        User uploadedBy = userService.getUserById(uploadedByUserId);
-
-        if (!group.isAdmin(uploadedBy)) {
-            throw new IllegalArgumentException("Only admins can update group image");
-        }
-
-        // TODO: Implement file upload to cloud storage (AWS S3, etc.)
-        String filename = "group_" + groupId + "_" + file.getOriginalFilename();
-        group.setGroupImageUrl("/uploads/groups/" + filename);
-
-        return groupRepository.save(group);
-    }
-
-    // ========== MEMBER MANAGEMENT ==========
+    Group addMembers(Long groupId, List<Long> userIds, Long addedByUserId);
 
     /**
-     * Add members to group
+     * Removes a member from a group.
+     * 
+     * @param groupId         the group ID
+     * @param userIdToRemove  the ID of the user to remove
+     * @param removedByUserId the ID of the user performing the removal
+     * @return the updated Group entity
      */
-    public Group addMembers(Long groupId, List<Long> userIds, Long addedByUserId) {
-        Group group = getGroupById(groupId);
-        User addedBy = userService.getUserById(addedByUserId);
-
-        // Check permission to invite
-        if (!group.canUserInvite(addedBy)) {
-            throw new IllegalArgumentException("User does not have permission to invite members");
-        }
-
-        List<User> usersToAdd = userService.getUsersByIds(userIds);
-
-        for (User user : usersToAdd) {
-            if (!group.isMember(user)) {
-                group.addMember(user);
-            }
-        }
-
-        return groupRepository.save(group);
-    }
+    Group removeMember(Long groupId, Long userIdToRemove, Long removedByUserId);
 
     /**
-     * Remove member from group
+     * Promotes a user to admin in a group.
+     * 
+     * @param groupId          the group ID
+     * @param userIdToPromote  the ID of the user to promote
+     * @param promotedByUserId the ID of the user performing the promotion
+     * @return the updated Group entity
      */
-    public Group removeMember(Long groupId, Long userIdToRemove, Long removedByUserId) {
-        Group group = getGroupById(groupId);
-        User removedBy = userService.getUserById(removedByUserId);
-        User userToRemove = userService.getUserById(userIdToRemove);
-
-        // Check permissions
-        if (!group.isAdmin(removedBy) && !removedBy.equals(userToRemove)) {
-            throw new IllegalArgumentException("Only admins can remove members, or users can remove themselves");
-        }
-
-        // Prevent removing the creator unless there's another admin
-        if (userToRemove.equals(group.getCreatedBy()) && group.getAdmins().size() <= 1) {
-            throw new IllegalStateException("Cannot remove creator unless there's another admin");
-        }
-
-        // Check for unsettled expenses
-        if (hasUnsettledExpenses(group, userToRemove)) {
-            throw new IllegalStateException("Cannot remove user with unsettled expenses");
-        }
-
-        group.removeMember(userToRemove);
-        return groupRepository.save(group);
-    }
+    Group promoteToAdmin(Long groupId, Long userIdToPromote, Long promotedByUserId);
 
     /**
-     * Promote member to admin
+     * Demotes an admin to a regular member in a group.
+     * 
+     * @param groupId         the group ID
+     * @param userIdToDemote  the ID of the user to demote
+     * @param demotedByUserId the ID of the user performing the demotion
+     * @return the updated Group entity
      */
-    public Group promoteToAdmin(Long groupId, Long userIdToPromote, Long promotedByUserId) {
-        Group group = getGroupById(groupId);
-        User promotedBy = userService.getUserById(promotedByUserId);
-        User userToPromote = userService.getUserById(userIdToPromote);
-
-        // Check permissions
-        if (!group.isAdmin(promotedBy)) {
-            throw new IllegalArgumentException("Only admins can promote members");
-        }
-
-        if (!group.isMember(userToPromote)) {
-            throw new IllegalArgumentException("User is not a member of this group");
-        }
-
-        group.addAdmin(userToPromote);
-        return groupRepository.save(group);
-    }
+    Group demoteAdmin(Long groupId, Long userIdToDemote, Long demotedByUserId);
 
     /**
-     * Demote admin to member
+     * Retrieves a group by its ID.
+     * 
+     * @param groupId the group ID
+     * @return the Group entity
      */
-    public Group demoteAdmin(Long groupId, Long userIdToDemote, Long demotedByUserId) {
-        Group group = getGroupById(groupId);
-        User demotedBy = userService.getUserById(demotedByUserId);
-        User userToDemote = userService.getUserById(userIdToDemote);
-
-        // Check permissions
-        if (!group.isAdmin(demotedBy)) {
-            throw new IllegalArgumentException("Only admins can demote other admins");
-        }
-
-        // Prevent demoting the creator
-        if (userToDemote.equals(group.getCreatedBy())) {
-            throw new IllegalArgumentException("Cannot demote group creator");
-        }
-
-        // Ensure at least one admin remains
-        if (group.getAdmins().size() <= 1) {
-            throw new IllegalStateException("Cannot demote the last admin");
-        }
-
-        group.removeAdmin(userToDemote);
-        return groupRepository.save(group);
-    }
-
-    // ========== GROUP RETRIEVAL ==========
+    Group getGroupById(Long groupId);
 
     /**
-     * Get group by ID
+     * Retrieves all groups a user is a member of.
+     * 
+     * @param userId the user ID
+     * @return a list of Group entities
      */
-    public Group getGroupById(Long groupId) {
-        return groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
-    }
+    List<Group> getUserGroups(Long userId);
 
     /**
-     * Get user's groups
+     * Retrieves all groups created by a user.
+     * 
+     * @param userId the user ID
+     * @return a list of Group entities
      */
-    public List<Group> getUserGroups(Long userId) {
-        User user = userService.getUserById(userId);
-        return groupRepository.findByMembersContaining(user);
-    }
+    List<Group> getGroupsCreatedByUser(Long userId);
 
     /**
-     * Get groups created by user
+     * Searches for public groups matching a query.
+     * 
+     * @param searchQuery the search query
+     * @return a list of matching Group entities
      */
-    public List<Group> getGroupsCreatedByUser(Long userId) {
-        User user = userService.getUserById(userId);
-        return groupRepository.findByCreatedBy(user);
-    }
+    List<Group> searchPublicGroups(String searchQuery);
 
     /**
-     * Search groups by name (public groups only)
+     * Retrieves all members of a group.
+     * 
+     * @param groupId the group ID
+     * @return a set of User entities
      */
-    public List<Group> searchPublicGroups(String searchQuery) {
-        return groupRepository.findByNameContainingIgnoreCase(searchQuery)
-                .stream()
-                .filter(group -> group.getPrivacyLevel() == Group.PrivacyLevel.PUBLIC)
-                .filter(Group::isActive)
-                .collect(Collectors.toList());
-    }
+    Set<User> getGroupMembers(Long groupId);
 
     /**
-     * Get group members
+     * Retrieves all admins of a group.
+     * 
+     * @param groupId the group ID
+     * @return a set of User entities who are admins
      */
-    public Set<User> getGroupMembers(Long groupId) {
-        Group group = getGroupById(groupId);
-        return group.getMembers();
-    }
+    Set<User> getGroupAdmins(Long groupId);
 
     /**
-     * Get group admins
+     * Archives a group.
+     * 
+     * @param groupId          the group ID
+     * @param archivedByUserId the ID of the user performing the archive
+     * @return the updated Group entity
      */
-    public Set<User> getGroupAdmins(Long groupId) {
-        Group group = getGroupById(groupId);
-        return group.getAdmins();
-    }
-
-    // ========== GROUP LIFECYCLE MANAGEMENT ==========
+    Group archiveGroup(Long groupId, Long archivedByUserId);
 
     /**
-     * Archive group
+     * Reactivates an archived group.
+     * 
+     * @param groupId             the group ID
+     * @param reactivatedByUserId the ID of the user performing the reactivation
+     * @return the updated Group entity
      */
-    public Group archiveGroup(Long groupId, Long archivedByUserId) {
-        Group group = getGroupById(groupId);
-        User archivedBy = userService.getUserById(archivedByUserId);
-
-        if (!group.isAdmin(archivedBy)) {
-            throw new IllegalArgumentException("Only admins can archive groups");
-        }
-
-        group.archive(archivedBy);
-        return groupRepository.save(group);
-    }
+    Group reactivateGroup(Long groupId, Long reactivatedByUserId);
 
     /**
-     * Reactivate archived group
+     * Deletes a group.
+     * 
+     * @param groupId         the group ID
+     * @param deletedByUserId the ID of the user performing the deletion
      */
-    public Group reactivateGroup(Long groupId, Long reactivatedByUserId) {
-        Group group = getGroupById(groupId);
-        User reactivatedBy = userService.getUserById(reactivatedByUserId);
-
-        if (!group.isAdmin(reactivatedBy)) {
-            throw new IllegalArgumentException("Only admins can reactivate groups");
-        }
-
-        group.reactivate();
-        return groupRepository.save(group);
-    }
+    void deleteGroup(Long groupId, Long deletedByUserId);
 
     /**
-     * Delete group (soft delete)
+     * Updates group settings.
+     * 
+     * @param groupId               the group ID
+     * @param invitationPolicy      the new invitation policy
+     * @param autoSettleThreshold   the new auto-settle threshold
+     * @param allowExternalPayments whether to allow external payments
+     * @param updatedByUserId       the ID of the user performing the update
+     * @return the updated Group entity
      */
-    public void deleteGroup(Long groupId, Long deletedByUserId) {
-        Group group = getGroupById(groupId);
-        User deletedBy = userService.getUserById(deletedByUserId);
-
-        if (!group.getCreatedBy().equals(deletedBy)) {
-            throw new IllegalArgumentException("Only group creator can delete the group");
-        }
-
-        // Check for unsettled expenses
-        if (hasUnsettledExpensesInGroup(group)) {
-            throw new IllegalStateException("Cannot delete group with unsettled expenses");
-        }
-
-        group.softDelete();
-        groupRepository.save(group);
-    }
-
-    // ========== GROUP SETTINGS MANAGEMENT ==========
+    Group updateGroupSettings(Long groupId, Group.InvitationPolicy invitationPolicy, BigDecimal autoSettleThreshold,
+            Boolean allowExternalPayments, Long updatedByUserId);
 
     /**
-     * Update group settings
+     * Retrieves statistics for a group.
+     * 
+     * @param groupId the group ID
+     * @return a GroupStats DTO containing group statistics
      */
-    public Group updateGroupSettings(Long groupId, Group.InvitationPolicy invitationPolicy,
-            BigDecimal autoSettleThreshold, Boolean allowExternalPayments,
-            Long updatedByUserId) {
-        Group group = getGroupById(groupId);
-        User updatedBy = userService.getUserById(updatedByUserId);
-
-        if (!group.isAdmin(updatedBy)) {
-            throw new IllegalArgumentException("Only admins can update group settings");
-        }
-
-        if (invitationPolicy != null) {
-            group.setInvitationPolicy(invitationPolicy);
-        }
-        if (autoSettleThreshold != null) {
-            group.setAutoSettleThreshold(autoSettleThreshold);
-        }
-        if (allowExternalPayments != null) {
-            group.setAllowExternalPayments(allowExternalPayments);
-        }
-
-        return groupRepository.save(group);
-    }
-
-    // ========== GROUP STATISTICS & ANALYTICS ==========
+    GroupServiceImpl.GroupStats getGroupStats(Long groupId);
 
     /**
-     * Get group statistics
+     * Retrieves balances for all users in a group.
+     * 
+     * @param groupId the group ID
+     * @return a list of UserBalance DTOs
      */
-    public GroupStats getGroupStats(Long groupId) {
-        Group group = getGroupById(groupId);
-
-        Long totalExpenses = expenseRepository.countByGroup(group);
-        BigDecimal totalAmount = expenseRepository.getTotalAmountByGroup(group);
-        BigDecimal settledAmount = expenseRepository.getTotalSettledAmountByGroup(group);
-
-        return GroupStats.builder()
-                .groupId(groupId)
-                .memberCount(group.getMemberCount())
-                .adminCount(group.getAdmins().size())
-                .totalExpenses(totalExpenses)
-                .totalAmount(totalAmount)
-                .settledAmount(settledAmount)
-                .createdAt(group.getCreatedAt())
-                .isActive(group.isActive())
-                .build();
-    }
+    List<GroupServiceImpl.UserBalance> getGroupBalances(Long groupId);
 
     /**
-     * Get group balance summary
+     * Checks if a user is a member of a group.
+     * 
+     * @param userId  the user ID
+     * @param groupId the group ID
+     * @return true if the user is a member, false otherwise
      */
-    public List<UserBalance> getGroupBalances(Long groupId) {
-        Group group = getGroupById(groupId);
-
-        return group.getMembers().stream()
-                .map(user -> {
-                    BigDecimal totalPaid = expenseRepository.getTotalPaidByUserInGroup(group, user);
-                    BigDecimal totalOwed = expenseRepository.getTotalOwedByUserInGroup(group, user);
-                    BigDecimal netBalance = totalPaid.subtract(totalOwed);
-
-                    return UserBalance.builder()
-                            .user(user)
-                            .totalPaid(totalPaid)
-                            .totalOwed(totalOwed)
-                            .netBalance(netBalance)
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
-
-    // ========== VALIDATION HELPERS ==========
+    boolean isUserMemberOfGroup(Long userId, Long groupId);
 
     /**
-     * Check if user is member of group
+     * Validates that a user has access to a group.
+     * 
+     * @param groupId the group ID
+     * @param userId  the user ID
      */
-    public boolean isUserMemberOfGroup(Long userId, Long groupId) {
-        return groupRepository.isUserMemberOfGroup(groupId, userId);
-    }
+    void validateGroupAccess(Long groupId, Long userId);
 
     /**
-     * Validate user has permission for group action
+     * Retrieves users eligible for group invitation based on a search query.
+     * 
+     * @param groupId     the group ID
+     * @param searchQuery the search query
+     * @return a list of User entities
      */
-    public void validateGroupAccess(Long groupId, Long userId) {
-        if (!isUserMemberOfGroup(userId, groupId)) {
-            throw new IllegalArgumentException("User is not a member of this group");
-        }
-    }
-
-    /**
-     * Check if group has unsettled expenses
-     */
-    private boolean hasUnsettledExpensesInGroup(Group group) {
-        return expenseRepository.findUnsettledExpensesByGroup(group).size() > 0;
-    }
-
-    /**
-     * Check if specific user has unsettled expenses in group
-     */
-    private boolean hasUnsettledExpenses(Group group, User user) {
-        return expenseRepository.findUnsettledExpensesByUserInGroup(group, user).size() > 0;
-    }
-
-    /**
-     * Get users suitable for group invitation
-     */
-    public List<User> getUsersForInvitation(Long groupId, String searchQuery) {
-        Group group = getGroupById(groupId);
-        return userRepository.findUsersNotInGroup(searchQuery, group);
-    }
-
-    // ========== DTO CLASSES ==========
-
-    @lombok.Builder
-    @lombok.Data
-    public static class GroupStats {
-        private Long groupId;
-        private Integer memberCount;
-        private Integer adminCount;
-        private Long totalExpenses;
-        private BigDecimal totalAmount;
-        private BigDecimal settledAmount;
-        private LocalDateTime createdAt;
-        private Boolean isActive;
-
-        public BigDecimal getUnsettledAmount() {
-            if (totalAmount == null || settledAmount == null)
-                return BigDecimal.ZERO;
-            return totalAmount.subtract(settledAmount);
-        }
-
-        public double getSettlementPercentage() {
-            if (totalAmount == null || totalAmount.equals(BigDecimal.ZERO))
-                return 0.0;
-            return settledAmount.divide(totalAmount, 4, java.math.RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100))
-                    .doubleValue();
-        }
-    }
-
-    @lombok.Builder
-    @lombok.Data
-    public static class UserBalance {
-        private User user;
-        private BigDecimal totalPaid;
-        private BigDecimal totalOwed;
-        private BigDecimal netBalance;
-
-        public boolean owesGroup() {
-            return netBalance.compareTo(BigDecimal.ZERO) < 0;
-        }
-
-        public boolean isOwedByGroup() {
-            return netBalance.compareTo(BigDecimal.ZERO) > 0;
-        }
-
-        public BigDecimal getAbsoluteBalance() {
-            return netBalance.abs();
-        }
-    }
+    List<User> getUsersForInvitation(Long groupId, String searchQuery);
 }

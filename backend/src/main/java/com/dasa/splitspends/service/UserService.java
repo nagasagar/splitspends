@@ -4,361 +4,223 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.dasa.splitspends.entity.Group;
 import com.dasa.splitspends.entity.User;
-import com.dasa.splitspends.repository.GroupRepository;
-import com.dasa.splitspends.repository.UserRepository;
 
-@Service
-@Transactional
-public class UserService {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private GroupRepository groupRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    // ========== USER REGISTRATION & AUTHENTICATION ==========
+public interface UserService {
 
     /**
-     * Register a new user with email and password
+     * Registers a new user with the given name, email, and password.
+     * 
+     * @param name     the user's name
+     * @param email    the user's email
+     * @param password the user's raw password
+     * @return the created User entity
      */
-    public User registerUser(String name, String email, String password) {
-        // Check if email already exists
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new IllegalArgumentException("Email already registered");
-        }
-
-        // Create new user
-        User user = User.builder()
-                .name(name)
-                .email(email.toLowerCase().trim())
-                .passwordHash(passwordEncoder.encode(password))
-                .emailVerified(false)
-                .accountStatus(User.AccountStatus.PENDING_VERIFICATION)
-                .build();
-
-        return userRepository.save(user);
-    }
+    User registerUser(String name, String email, String password);
 
     /**
-     * Register or login user via Google SSO
+     * Registers or logs in a user using Google authentication.
+     * 
+     * @param googleId the Google account ID
+     * @param email    the user's email
+     * @param name     the user's name
+     * @return the created or existing User entity
      */
-    public User registerOrLoginWithGoogle(String googleId, String email, String name) {
-        // Try to find existing user by Google ID
-        Optional<User> existingUser = userRepository.findByGoogleId(googleId);
-
-        if (existingUser.isPresent()) {
-            User user = existingUser.get();
-            user.updateLastLogin();
-            return userRepository.save(user);
-        }
-
-        // Try to find by email (user might have registered with email before)
-        Optional<User> userByEmail = userRepository.findByEmail(email);
-        if (userByEmail.isPresent()) {
-            User user = userByEmail.get();
-            user.setGoogleId(googleId);
-            user.setEmailVerified(true);
-            user.setAccountStatus(User.AccountStatus.ACTIVE);
-            user.updateLastLogin();
-            return userRepository.save(user);
-        }
-
-        // Create new Google user
-        User newUser = User.builder()
-                .name(name)
-                .email(email.toLowerCase().trim())
-                .googleId(googleId)
-                .emailVerified(true)
-                .accountStatus(User.AccountStatus.ACTIVE)
-                .build();
-
-        newUser.updateLastLogin();
-        return userRepository.save(newUser);
-    }
+    User registerOrLoginWithGoogle(String googleId, String email, String name);
 
     /**
-     * Verify user email
+     * Verifies the user's email address.
+     * 
+     * @param email the user's email
+     * @return the updated User entity
      */
-    public User verifyEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        user.setEmailVerified(true);
-        if (user.getAccountStatus() == User.AccountStatus.PENDING_VERIFICATION) {
-            user.setAccountStatus(User.AccountStatus.ACTIVE);
-        }
-
-        return userRepository.save(user);
-    }
+    User verifyEmail(String email);
 
     /**
-     * Login user (update last login timestamp)
+     * Authenticates a user with email and password.
+     * 
+     * @param email    the user's email
+     * @param password the user's raw password
+     * @return the authenticated User entity
      */
-    public User loginUser(String email, String password) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
-
-        if (!user.isActive()) {
-            throw new IllegalStateException("Account is not active");
-        }
-
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid credentials");
-        }
-
-        user.updateLastLogin();
-        return userRepository.save(user);
-    }
-
-    // ========== USER PROFILE MANAGEMENT ==========
+    User loginUser(String email, String password);
 
     /**
-     * Update user profile
+     * Updates the user's profile information.
+     * 
+     * @param userId            the user's ID
+     * @param name              the new name
+     * @param phoneNumber       the new phone number
+     * @param preferredCurrency the preferred currency
+     * @param timezone          the timezone
+     * @param language          the language
+     * @return the updated User entity
      */
-    public User updateProfile(Long userId, String name, String phoneNumber,
-            String preferredCurrency, String timezone, String language) {
-        User user = getUserById(userId);
-
-        if (name != null && !name.trim().isEmpty()) {
-            user.setName(name);
-        }
-        if (phoneNumber != null) {
-            user.setPhoneNumber(phoneNumber);
-        }
-        if (preferredCurrency != null) {
-            user.setPreferredCurrency(preferredCurrency);
-        }
-        if (timezone != null) {
-            user.setTimezone(timezone);
-        }
-        if (language != null) {
-            user.setLanguage(language);
-        }
-
-        return userRepository.save(user);
-    }
+    User updateProfile(Long userId, String name, String phoneNumber, String preferredCurrency, String timezone,
+            String language);
 
     /**
-     * Update user notification preferences
+     * Updates the user's notification preferences.
+     * 
+     * @param userId             the user's ID
+     * @param emailNotifications enable/disable email notifications
+     * @param pushNotifications  enable/disable push notifications
+     * @param paymentReminders   enable/disable payment reminders
+     * @return the updated User entity
      */
-    public User updateNotificationPreferences(Long userId, Boolean emailNotifications,
-            Boolean pushNotifications, Boolean paymentReminders) {
-        User user = getUserById(userId);
-
-        if (emailNotifications != null) {
-            user.setEmailNotifications(emailNotifications);
-        }
-        if (pushNotifications != null) {
-            user.setPushNotifications(pushNotifications);
-        }
-        if (paymentReminders != null) {
-            user.setPaymentReminders(paymentReminders);
-        }
-
-        return userRepository.save(user);
-    }
+    User updateNotificationPreferences(Long userId, Boolean emailNotifications, Boolean pushNotifications,
+            Boolean paymentReminders);
 
     /**
-     * Upload profile picture
+     * Uploads a new profile picture for the user.
+     * 
+     * @param userId the user's ID
+     * @param file   the profile picture file
+     * @return the updated User entity
      */
-    public User uploadProfilePicture(Long userId, MultipartFile file) {
-        User user = getUserById(userId);
-
-        // TODO: Implement file upload to cloud storage (AWS S3, etc.)
-        // For now, just store filename
-        String filename = userId + "_" + file.getOriginalFilename();
-        user.setProfilePictureUrl("/uploads/profiles/" + filename);
-
-        return userRepository.save(user);
-    }
+    User uploadProfilePicture(Long userId, MultipartFile file);
 
     /**
-     * Change password
+     * Changes the user's password.
+     * 
+     * @param userId          the user's ID
+     * @param currentPassword the current password
+     * @param newPassword     the new password
+     * @return the updated User entity
      */
-    public User changePassword(Long userId, String currentPassword, String newPassword) {
-        User user = getUserById(userId);
-
-        if (user.getPasswordHash() == null) {
-            throw new IllegalStateException("User registered with Google SSO cannot change password");
-        }
-
-        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw new IllegalArgumentException("Current password is incorrect");
-        }
-
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        return userRepository.save(user);
-    }
-
-    // ========== USER RETRIEVAL ==========
+    User changePassword(Long userId, String currentPassword, String newPassword);
 
     /**
-     * Get user by ID
+     * Retrieves a user by their ID.
+     * 
+     * @param userId the user's ID
+     * @return the User entity
      */
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-    }
+    User getUserById(Long userId);
 
     /**
-     * Get user by email
+     * Retrieves a user by their email.
+     * 
+     * @param email the user's email
+     * @return an Optional containing the User entity if found
      */
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
+    Optional<User> getUserByEmail(String email);
 
     /**
-     * Search users by name or email (for adding to groups)
+     * Searches for users matching the given query.
+     * 
+     * @param query the search query
+     * @return a list of matching users
      */
-    public List<User> searchUsers(String query) {
-        return userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
-    }
+    List<User> searchUsers(String query);
 
     /**
-     * Get users by IDs (for group operations)
+     * Retrieves users by a list of IDs.
+     * 
+     * @param userIds the list of user IDs
+     * @return a list of User entities
      */
-    public List<User> getUsersByIds(List<Long> userIds) {
-        return userRepository.findAllById(userIds);
-    }
+    List<User> getUsersByIds(List<Long> userIds);
 
     /**
-     * Get all active users with pagination
+     * Retrieves a paginated list of all active users.
+     * 
+     * @param pageable the pagination information
+     * @return a page of User entities
      */
-    public Page<User> getAllActiveUsers(Pageable pageable) {
-        return userRepository.findByAccountStatusAndDeletedAtIsNull(User.AccountStatus.ACTIVE, pageable);
-    }
-
-    // ========== USER ACCOUNT MANAGEMENT ==========
+    Page<User> getAllActiveUsers(Pageable pageable);
 
     /**
-     * Suspend user account
+     * Suspends a user account with a reason.
+     * 
+     * @param userId the user's ID
+     * @param reason the reason for suspension
+     * @return the updated User entity
      */
-    public User suspendUser(Long userId, String reason) {
-        User user = getUserById(userId);
-        user.setAccountStatus(User.AccountStatus.SUSPENDED);
-        return userRepository.save(user);
-    }
+    User suspendUser(Long userId, String reason);
 
     /**
-     * Reactivate suspended user
+     * Reactivates a suspended user account.
+     * 
+     * @param userId the user's ID
+     * @return the updated User entity
      */
-    public User reactivateUser(Long userId) {
-        User user = getUserById(userId);
-        if (user.getAccountStatus() == User.AccountStatus.SUSPENDED) {
-            user.setAccountStatus(User.AccountStatus.ACTIVE);
-        }
-        return userRepository.save(user);
-    }
+    User reactivateUser(Long userId);
 
     /**
-     * Soft delete user account
+     * Soft deletes a user account.
+     * 
+     * @param userId the user's ID
      */
-    public void deleteUser(Long userId) {
-        User user = getUserById(userId);
-        user.softDelete();
-        userRepository.save(user);
-    }
-
-    // ========== GROUP RELATIONSHIPS ==========
+    void deleteUser(Long userId);
 
     /**
-     * Get user's groups
+     * Retrieves all groups the user is a member of.
+     * 
+     * @param userId the user's ID
+     * @return a list of Group entities
      */
-    public List<Group> getUserGroups(Long userId) {
-        User user = getUserById(userId);
-        return groupRepository.findByMembersContaining(user);
-    }
+    List<Group> getUserGroups(Long userId);
 
     /**
-     * Check if user is member of a group
+     * Checks if a user is a member of a specific group.
+     * 
+     * @param userId  the user's ID
+     * @param groupId the group's ID
+     * @return true if the user is a member, false otherwise
      */
-    public boolean isUserMemberOfGroup(Long userId, Long groupId) {
-        User user = getUserById(userId);
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
-
-        return user.isMemberOf(group);
-    }
+    boolean isUserMemberOfGroup(Long userId, Long groupId);
 
     /**
-     * Get mutual groups between two users
+     * Retrieves mutual groups between two users.
+     * 
+     * @param user1Id the first user's ID
+     * @param user2Id the second user's ID
+     * @return a list of mutual Group entities
      */
-    public List<Group> getMutualGroups(Long user1Id, Long user2Id) {
-        User user1 = getUserById(user1Id);
-        User user2 = getUserById(user2Id);
-
-        return groupRepository.findMutualGroups(user1, user2);
-    }
-
-    // ========== USER STATISTICS ==========
+    List<Group> getMutualGroups(Long user1Id, Long user2Id);
 
     /**
-     * Get user statistics
+     * Retrieves statistics for a user.
+     * 
+     * @param userId the user's ID
+     * @return a UserStats DTO containing user statistics
      */
-    public UserStats getUserStats(Long userId) {
-        User user = getUserById(userId);
-
-        // Get counts from repositories
-        Long totalGroups = groupRepository.countByMembersContaining(user);
-        // You'll need to add these methods to repositories:
-        // Long totalExpensesPaid = expenseRepository.countByPaidBy(user);
-        // Long totalExpenseSplits = expenseSplitRepository.countByUser(user);
-
-        return UserStats.builder()
-                .userId(userId)
-                .totalGroups(totalGroups)
-                .accountAge(java.time.temporal.ChronoUnit.DAYS.between(user.getJoinedAt(), LocalDateTime.now()))
-                .isVerified(user.isVerified())
-                .isGoogleUser(user.isGoogleUser())
-                .lastLoginAt(user.getLastLoginAt())
-                .build();
-    }
-
-    // ========== UTILITY METHODS ==========
+    UserStats getUserStats(Long userId);
 
     /**
-     * Check if email is available for registration
+     * Checks if an email is available for registration.
+     * 
+     * @param email the email to check
+     * @return true if available, false otherwise
      */
-    public boolean isEmailAvailable(String email) {
-        return !userRepository.findByEmail(email).isPresent();
-    }
+    boolean isEmailAvailable(String email);
 
     /**
-     * Validate user exists and is active
+     * Validates that a user account is active.
+     * 
+     * @param userId the user's ID
      */
-    public void validateUserActiveStatus(Long userId) {
-        User user = getUserById(userId);
-        if (!user.isActive()) {
-            throw new IllegalStateException("User account is not active");
-        }
-    }
+    void validateUserActiveStatus(Long userId);
 
     /**
-     * Get users for group invitation (exclude existing members)
+     * Retrieves users eligible for group invitation based on a search query and
+     * group.
+     * 
+     * @param searchQuery the search query
+     * @param groupId     the group ID
+     * @return a list of User entities
      */
-    public List<User> getUsersForGroupInvitation(String searchQuery, Long groupId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+    List<User> getUsersForGroupInvitation(String searchQuery, Long groupId);
 
-        return userRepository.findUsersNotInGroup(searchQuery, group);
-    }
-
-    // ========== DTO CLASSES ==========
-
+    /**
+     * DTO for user statistics.
+     */
     @lombok.Builder
     @lombok.Data
     public static class UserStats {
