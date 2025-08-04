@@ -39,9 +39,9 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Email already registered");
         }
         User user = new User();
+        user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        // set other user fields as needed
         userRepository.save(user);
         String token = jwtUtil.generateToken(user.getEmail());
         return new AuthResponse(token, null, user.getEmail());

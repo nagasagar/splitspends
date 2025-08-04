@@ -1,11 +1,17 @@
 package com.dasa.splitspends.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.dasa.splitspends.dto.AuthRequest;
 import com.dasa.splitspends.dto.AuthResponse;
 import com.dasa.splitspends.dto.GoogleAuthRequest;
 import com.dasa.splitspends.service.AuthService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -18,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.signup(request));
     }
 
