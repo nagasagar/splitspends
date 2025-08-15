@@ -181,7 +181,7 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public List<Attachment> getAttachmentsByType(Attachment.AttachmentType attachmentType) {
-        return attachmentRepository.findByAttachmentTypeAndDeletedAtIsNullOrderByCreatedAtDesc(attachmentType);
+        return attachmentRepository.findByExpenseAndType(null, attachmentType);
     }
 
     @Override
