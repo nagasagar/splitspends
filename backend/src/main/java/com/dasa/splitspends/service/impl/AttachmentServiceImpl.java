@@ -103,13 +103,13 @@ public class AttachmentServiceImpl implements AttachmentService {
             attachment.setStorageProvider(Attachment.StorageProvider.LOCAL);
             attachment.setCreatedAt(LocalDateTime.now());
 
-            // Set file type
+            // Set file type based on content type
             if (contentType.startsWith("image/")) {
-                attachment.setFileType(Attachment.FileType.IMAGE);
+                attachment.setAttachmentType(Attachment.AttachmentType.RECEIPT_IMAGE);
             } else if (contentType.equals("application/pdf")) {
-                attachment.setFileType(Attachment.FileType.PDF);
+                attachment.setAttachmentType(Attachment.AttachmentType.PDF_DOCUMENT);
             } else {
-                attachment.setFileType(Attachment.FileType.DOCUMENT);
+                attachment.setAttachmentType(Attachment.AttachmentType.OTHER);
             }
 
             Attachment saved = attachmentRepository.save(attachment);
