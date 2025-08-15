@@ -162,7 +162,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     public List<Attachment> getExpenseAttachments(Long expenseId) {
         Expense expense = expenseRepository.findById(expenseId)
             .orElseThrow(() -> new RuntimeException("Expense not found"));
-        return attachmentRepository.findByExpenseAndIsDeletedFalseOrderByCreatedAtDesc(expense);
+        return attachmentRepository.findByExpenseAndDeletedAtIsNullOrderByCreatedAtDesc(expense);
     }
 
     @Override
