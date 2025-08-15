@@ -169,7 +169,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     public List<Attachment> getUserAttachments(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
-        return attachmentRepository.findByUploadedByAndDeletedAtIsNullOrderByCreatedAtDesc(user);
+        return attachmentRepository.findActiveByUser(user);
     }
 
     @Override
