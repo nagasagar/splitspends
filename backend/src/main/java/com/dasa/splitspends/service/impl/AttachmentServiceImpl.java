@@ -99,7 +99,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             attachment.setFilePath(filePath.toString());
             attachment.setFileSize(file.getSize());
             attachment.setContentType(contentType);
-            attachment.setChecksum(checksum);
+            attachment.setFileChecksum(checksum);
             attachment.setDescription(description);
             attachment.setStorageProvider("local");
             attachment.setCreatedAt(LocalDateTime.now());
