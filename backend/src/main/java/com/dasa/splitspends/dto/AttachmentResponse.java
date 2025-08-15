@@ -40,7 +40,7 @@ public class AttachmentResponse {
                 .checksum(attachment.getFileChecksum())
                 .storageProvider(attachment.getStorageProvider())
                 .thumbnailUrl(attachment.getThumbnailUrl())
-                .isDeleted(attachment.getIsDeleted())
+                .isDeleted(attachment.isDeleted())
                 .createdAt(attachment.getCreatedAt())
                 .deletedAt(attachment.getDeletedAt())
                 .build();
