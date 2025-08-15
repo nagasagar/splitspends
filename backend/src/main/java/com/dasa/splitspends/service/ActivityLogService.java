@@ -48,16 +48,31 @@ public interface ActivityLogService {
     ActivityLog logSettlementDeleted(User user, Group group, SettleUp settlement);
     ActivityLog logSettlementInProgress(User user, Group group, SettleUp settlement);
     ActivityLog logSettlementCancelled(User user, Group group, SettleUp settlement);
+    
+    // Additional settlement methods
+    ActivityLog logSettlementCreated(SettleUp settlement, User user);
+    ActivityLog logSettlementConfirmed(SettleUp settlement, User user);
+    ActivityLog logSettlementRejected(SettleUp settlement, User user, String reason);
 
     // Invitation activity
     ActivityLog logInvitationSent(User user, Group group, Invitation invitation);
     ActivityLog logInvitationAccepted(User user, Group group, Invitation invitation);
     ActivityLog logInvitationDeclined(String email, Group group, Invitation invitation);
+    
+    // Additional invitation methods
+    ActivityLog logInvitationSent(Invitation invitation, User user);
+    ActivityLog logInvitationAccepted(Invitation invitation, User user);
+    ActivityLog logInvitationDeclined(Invitation invitation, User user, String reason);
+    ActivityLog logInvitationCancelled(Invitation invitation, User user);
 
     // Attachment activity
     ActivityLog logAttachmentUploaded(User user, Group group, Attachment attachment);
     ActivityLog logAttachmentDeleted(User user, Group group, Attachment attachment);
     ActivityLog logAttachmentDownloaded(User user, Group group, Attachment attachment);
+    
+    // Additional attachment methods
+    ActivityLog logAttachmentUploaded(Attachment attachment, User user);
+    ActivityLog logAttachmentDeleted(Attachment attachment, User user);
 
     // Query operations
     Page<ActivityLog> getActivityLogsForUser(User user, Pageable pageable);
