@@ -93,7 +93,7 @@ public class AttachmentController {
 
     @GetMapping("/type/{attachmentType}")
     public ResponseEntity<List<AttachmentResponse>> getAttachmentsByType(@PathVariable Attachment.AttachmentType attachmentType) {
-        List<Attachment> attachments = attachmentService.getAttachmentsByType(fileType);
+        List<Attachment> attachments = attachmentService.getAttachmentsByType(attachmentType);
         List<AttachmentResponse> response = attachments.stream()
                 .map(AttachmentResponse::fromEntity)
                 .toList();
