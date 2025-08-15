@@ -17,10 +17,10 @@ public class AttachmentResponse {
     private String storedFilename;
     private Long fileSize;
     private String contentType;
-    private Attachment.FileType fileType;
+    private Attachment.AttachmentType attachmentType;
     private String description;
     private String checksum;
-    private Attachment.StorageProvider storageProvider;
+    private String storageProvider;
     private String thumbnailUrl;
     private Boolean isDeleted;
     private LocalDateTime createdAt;
