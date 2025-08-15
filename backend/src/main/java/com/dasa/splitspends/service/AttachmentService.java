@@ -41,7 +41,7 @@ public interface AttachmentService {
     /**
      * Get attachments by file type.
      */
-    List<Attachment> getAttachmentsByType(Attachment.FileType fileType);
+    List<Attachment> getAttachmentsByType(Attachment.AttachmentType attachmentType);
 
     /**
      * Get attachment by ID.
