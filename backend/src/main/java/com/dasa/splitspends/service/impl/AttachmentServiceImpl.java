@@ -151,7 +151,6 @@ public class AttachmentServiceImpl implements AttachmentService {
         validateUserAccess(attachment, deletedByUserId);
 
         // Soft delete
-        attachment.setIsDeleted(true);
         attachment.setDeletedAt(LocalDateTime.now());
         attachmentRepository.save(attachment);
 
