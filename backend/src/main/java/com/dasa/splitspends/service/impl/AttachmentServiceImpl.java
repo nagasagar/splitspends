@@ -100,7 +100,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             attachment.setContentType(contentType);
             attachment.setChecksum(checksum);
             attachment.setDescription(description);
-            attachment.setStorageProvider(Attachment.StorageProvider.LOCAL);
+            attachment.setStorageProvider("local");
             attachment.setCreatedAt(LocalDateTime.now());
 
             // Set file type based on content type
