@@ -181,7 +181,11 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public List<Attachment> getAttachmentsByType(Attachment.AttachmentType attachmentType) {
-        return attachmentRepository.findByExpenseAndType(null, attachmentType);
+        // For now, return all attachments - can be optimized later
+        return attachmentRepository.findAll().stream()
+            .filter(a -> a.getAttachmentType() == attachmentType && a.getDeletedAt() == null)
+            .sorted((a1, a2) -> a2.getCreatedAt().compareTo(a1.getCreatedAt()))
+            .toList();
     }
 
     @Override
