@@ -39,11 +39,10 @@ public class UserController {
             @PathVariable Long userId,
             @Valid @RequestBody UserProfileUpdateRequest request) {
         User user = userService.updateUserProfile(
-            userId,
-            request.getName(),
-            request.getPhoneNumber(),
-            request.getProfilePictureUrl()
-        );
+                userId,
+                request.getName(),
+                request.getPhoneNumber(),
+                request.getProfilePictureUrl());
         return ResponseEntity.ok(UserResponse.fromEntity(user));
     }
 
@@ -58,7 +57,8 @@ public class UserController {
 
     @GetMapping("/email/{email}")
     public ResponseEntity<UserResponse> getUserByEmail(@PathVariable String email) {
-        User user = userService.getUserByEmail(email);
+        User user = userService.getUserByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         return ResponseEntity.ok(UserResponse.fromEntity(user));
     }
 

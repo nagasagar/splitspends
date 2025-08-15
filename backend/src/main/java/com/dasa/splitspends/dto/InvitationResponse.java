@@ -13,7 +13,7 @@ public class InvitationResponse {
     private Long id;
     private GroupResponse group;
     private String email;
-    private UserResponse invitedUser;
+    private String invitedName;
     private UserResponse invitedBy;
     private String personalMessage;
     private String invitationToken;
@@ -27,14 +27,27 @@ public class InvitationResponse {
     private String declineReason;
     private Integer reminderCount;
     private LocalDateTime lastEmailSentAt;
-    
+
     public static InvitationResponse fromEntity(Invitation invitation) {
+        // Compute lastEmailSentAt as the latest of emailSentAt and lastReminderSentAt
+        LocalDateTime lastEmailSentAt = null;
+        if (invitation.getEmailSentAt() != null && invitation.getLastReminderSentAt() != null) {
+            lastEmailSentAt = invitation.getEmailSentAt().isAfter(invitation.getLastReminderSentAt())
+                    ? invitation.getEmailSentAt()
+                    : invitation.getLastReminderSentAt();
+        } else if (invitation.getEmailSentAt() != null) {
+            lastEmailSentAt = invitation.getEmailSentAt();
+        } else if (invitation.getLastReminderSentAt() != null) {
+            lastEmailSentAt = invitation.getLastReminderSentAt();
+        }
+
         return InvitationResponse.builder()
                 .id(invitation.getId())
                 .group(invitation.getGroup() != null ? GroupResponse.fromEntity(invitation.getGroup()) : null)
                 .email(invitation.getEmail())
-                .invitedUser(invitation.getInvitedUser() != null ? UserResponse.fromEntity(invitation.getInvitedUser()) : null)
-                .invitedBy(invitation.getInvitedBy() != null ? UserResponse.fromEntity(invitation.getInvitedBy()) : null)
+                .invitedName(invitation.getInvitedName())
+                .invitedBy(
+                        invitation.getInvitedBy() != null ? UserResponse.fromEntity(invitation.getInvitedBy()) : null)
                 .personalMessage(invitation.getPersonalMessage())
                 .invitationToken(invitation.getInvitationToken())
                 .status(invitation.getStatus())
@@ -43,10 +56,11 @@ public class InvitationResponse {
                 .acceptedAt(invitation.getAcceptedAt())
                 .declinedAt(invitation.getDeclinedAt())
                 .cancelledAt(invitation.getCancelledAt())
-                .acceptedBy(invitation.getAcceptedBy() != null ? UserResponse.fromEntity(invitation.getAcceptedBy()) : null)
+                .acceptedBy(
+                        invitation.getAcceptedBy() != null ? UserResponse.fromEntity(invitation.getAcceptedBy()) : null)
                 .declineReason(invitation.getDeclineReason())
                 .reminderCount(invitation.getReminderCount())
-                .lastEmailSentAt(invitation.getLastEmailSentAt())
+                .lastEmailSentAt(lastEmailSentAt)
                 .build();
     }
 }

@@ -70,7 +70,7 @@ public class SettleUp {
 
     @Column(name = "currency", length = 3)
     @Builder.Default
-    private String currency = "USD";
+    private String currency = "INR";
 
     // ========== SETTLEMENT STATUS ==========
 
@@ -82,6 +82,10 @@ public class SettleUp {
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", length = 30)
     private PaymentMethod paymentMethod;
+
+    @Size(max = 255, message = "Description cannot exceed 255 characters")
+    @Column(name = "description", length = 255)
+    private String description;
 
     @Size(max = 500, message = "Notes cannot exceed 500 characters")
     @Column(name = "notes", length = 500)
@@ -168,21 +172,27 @@ public class SettleUp {
         return SettlementStatus.PENDING.equals(status);
     }
 
+    public String getExternalTransactionId() {
+        return externalTransactionId;
+    }
+
+    public void setExternalTransactionId(String externalTransactionId) {
+        this.externalTransactionId = externalTransactionId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     /**
      * Get formatted amount with currency
      */
     public String getFormattedAmount() {
         return String.format("%s %.2f", currency, amount);
-    }
-
-    /**
-     * Get settlement description
-     */
-    public String getDescription() {
-        return String.format("%s pays %s %s",
-                payer.getName(),
-                payee.getName(),
-                getFormattedAmount());
     }
 
     // ========== VALIDATION METHODS ==========
@@ -214,6 +224,7 @@ public class SettleUp {
 
     public enum SettlementStatus {
         PENDING("Pending confirmation"),
+        CONFIRMED("Settlement confirmed"),
         IN_PROGRESS("Payment in progress"),
         COMPLETED("Settlement completed"),
         REJECTED("Settlement rejected"),

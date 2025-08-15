@@ -18,7 +18,7 @@ public class UserResponse {
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime lastLoginAt;
-    
+
     public static UserResponse fromEntity(User user) {
         return UserResponse.builder()
                 .id(user.getId())
@@ -26,8 +26,8 @@ public class UserResponse {
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .profilePictureUrl(user.getProfilePictureUrl())
-                .isActive(user.getIsActive())
-                .createdAt(user.getCreatedAt())
+                .isActive(user.isActive())
+                .createdAt(user.getJoinedAt())
                 .lastLoginAt(user.getLastLoginAt())
                 .build();
     }

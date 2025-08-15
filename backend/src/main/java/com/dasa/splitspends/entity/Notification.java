@@ -225,6 +225,7 @@ public class Notification {
     // ========== ENUMS ==========
 
     public enum NotificationType {
+
         // Expense notifications
         EXPENSE_ADDED("New expense added"),
         EXPENSE_UPDATED("Expense updated"),
@@ -232,11 +233,15 @@ public class Notification {
 
         // Settlement notifications
         SETTLEMENT_REQUEST("Settlement request"),
+        SETTLEMENT_REQUESTED("Settlement requested"),
+        SETTLEMENT_CONFIRMED("Settlement confirmed"),
+        SETTLEMENT_REMINDER("Settlement reminder"),
         SETTLEMENT_COMPLETED("Settlement completed"),
         SETTLEMENT_REJECTED("Settlement rejected"),
 
         // Group notifications
         GROUP_INVITATION("Group invitation"),
+        GROUP_MEMBER_ADDED("Group member added"),
         MEMBER_ADDED("Member added to group"),
         MEMBER_REMOVED("Member removed from group"),
         GROUP_UPDATED("Group updated"),

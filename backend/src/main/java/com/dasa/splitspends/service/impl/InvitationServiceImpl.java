@@ -30,11 +30,11 @@ public class InvitationServiceImpl implements InvitationService {
     private final NotificationService notificationService;
 
     public InvitationServiceImpl(InvitationRepository invitationRepository,
-                                UserRepository userRepository,
-                                GroupRepository groupRepository,
-                                GroupService groupService,
-                                ActivityLogService activityLogService,
-                                NotificationService notificationService) {
+            UserRepository userRepository,
+            GroupRepository groupRepository,
+            GroupService groupService,
+            ActivityLogService activityLogService,
+            NotificationService notificationService) {
         this.invitationRepository = invitationRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
@@ -46,9 +46,9 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public Invitation sendInvitation(Long groupId, String email, Long invitedByUserId, String personalMessage) {
         Group group = groupRepository.findById(groupId)
-            .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new RuntimeException("Group not found"));
         User invitedBy = userRepository.findById(invitedByUserId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Check if invitation already exists
         if (invitationRepository.hasPendingInvitation(email, group)) {
@@ -64,7 +64,6 @@ public class InvitationServiceImpl implements InvitationService {
         Invitation invitation = new Invitation();
         invitation.setGroup(group);
         invitation.setEmail(email);
-        invitation.setInvitedUser(existingUser);
         invitation.setInvitedBy(invitedBy);
         invitation.setPersonalMessage(personalMessage);
         invitation.setInvitationToken(UUID.randomUUID().toString());
@@ -76,7 +75,7 @@ public class InvitationServiceImpl implements InvitationService {
 
         // Log activity
         activityLogService.logInvitationSent(saved, invitedBy);
-        
+
         // Send notification
         notificationService.sendGroupInvitationNotification(saved);
 
@@ -86,9 +85,9 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public Invitation acceptInvitation(String token, Long acceptingUserId) {
         Invitation invitation = invitationRepository.findByInvitationToken(token)
-            .orElseThrow(() -> new RuntimeException("Invalid invitation token"));
+                .orElseThrow(() -> new RuntimeException("Invalid invitation token"));
         User acceptingUser = userRepository.findById(acceptingUserId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (invitation.getStatus() != Invitation.InvitationStatus.PENDING) {
             throw new RuntimeException("Invitation is not pending");
@@ -101,8 +100,8 @@ public class InvitationServiceImpl implements InvitationService {
         }
 
         // Add user to group
-        groupService.addMembers(invitation.getGroup().getId(), 
-            List.of(acceptingUser.getId()), acceptingUser.getId());
+        groupService.addMembers(invitation.getGroup().getId(),
+                List.of(acceptingUser.getId()), acceptingUser.getId());
 
         invitation.setStatus(Invitation.InvitationStatus.ACCEPTED);
         invitation.setAcceptedAt(LocalDateTime.now());
@@ -119,9 +118,9 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public Invitation declineInvitation(String token, Long decliningUserId, String reason) {
         Invitation invitation = invitationRepository.findByInvitationToken(token)
-            .orElseThrow(() -> new RuntimeException("Invalid invitation token"));
+                .orElseThrow(() -> new RuntimeException("Invalid invitation token"));
         User decliningUser = userRepository.findById(decliningUserId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (invitation.getStatus() != Invitation.InvitationStatus.PENDING) {
             throw new RuntimeException("Invitation is not pending");
@@ -142,36 +141,36 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public List<Invitation> getGroupInvitations(Long groupId) {
         Group group = groupRepository.findById(groupId)
-            .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new RuntimeException("Group not found"));
         return invitationRepository.findByGroupOrderByCreatedAtDesc(group);
     }
 
     @Override
     public List<Invitation> getUserInvitations(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        return invitationRepository.findByInvitedUserOrderByCreatedAtDesc(user);
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return invitationRepository.findByEmailOrderByCreatedAtDesc(user.getEmail());
     }
 
     @Override
     public List<Invitation> getPendingInvitations(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        return invitationRepository.findPendingByUser(user);
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return invitationRepository.findPendingByEmail(user.getEmail());
     }
 
     @Override
     public Invitation getInvitationByToken(String token) {
         return invitationRepository.findByInvitationToken(token)
-            .orElseThrow(() -> new RuntimeException("Invalid invitation token"));
+                .orElseThrow(() -> new RuntimeException("Invalid invitation token"));
     }
 
     @Override
     public void cancelInvitation(Long invitationId, Long cancelledByUserId) {
         Invitation invitation = invitationRepository.findById(invitationId)
-            .orElseThrow(() -> new RuntimeException("Invitation not found"));
+                .orElseThrow(() -> new RuntimeException("Invitation not found"));
         User cancelledBy = userRepository.findById(cancelledByUserId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (invitation.getStatus() != Invitation.InvitationStatus.PENDING) {
             throw new RuntimeException("Can only cancel pending invitations");
@@ -196,11 +195,11 @@ public class InvitationServiceImpl implements InvitationService {
     public void sendInvitationReminders() {
         LocalDateTime reminderThreshold = LocalDateTime.now().minusDays(5);
         List<Invitation> invitations = invitationRepository.findInvitationsNeedingReminder(reminderThreshold);
-        
+
         for (Invitation invitation : invitations) {
             // Send reminder email logic would go here
             invitation.setReminderCount(invitation.getReminderCount() + 1);
-            invitation.setLastEmailSentAt(LocalDateTime.now());
+            invitation.setLastReminderSentAt(LocalDateTime.now());
             invitationRepository.save(invitation);
         }
     }
@@ -208,15 +207,15 @@ public class InvitationServiceImpl implements InvitationService {
     @Override
     public boolean isInvitationValid(String token) {
         return invitationRepository.findByInvitationToken(token)
-            .map(invitation -> invitation.getStatus() == Invitation.InvitationStatus.PENDING 
-                && invitation.getExpiresAt().isAfter(LocalDateTime.now()))
-            .orElse(false);
+                .map(invitation -> invitation.getStatus() == Invitation.InvitationStatus.PENDING
+                        && invitation.getExpiresAt().isAfter(LocalDateTime.now()))
+                .orElse(false);
     }
 
     @Override
     public List<Invitation> getInvitationsSentByUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return invitationRepository.findByInvitedByOrderByCreatedAtDesc(user);
     }
 }

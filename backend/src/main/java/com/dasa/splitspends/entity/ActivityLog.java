@@ -276,7 +276,8 @@ public class ActivityLog {
         // Other actions
         ARCHIVE("Archived"),
         RESTORE("Restored"),
-        EXPORT("Exported");
+        EXPORT("Exported"),
+        CANCEL_INVITATION("Cancelled invitation");
 
         private final String description;
 

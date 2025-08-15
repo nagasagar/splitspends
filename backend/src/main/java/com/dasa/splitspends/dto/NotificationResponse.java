@@ -3,6 +3,8 @@ package com.dasa.splitspends.dto;
 import java.time.LocalDateTime;
 
 import com.dasa.splitspends.entity.Notification;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Builder;
 import lombok.Data;
@@ -21,11 +23,21 @@ public class NotificationResponse {
     private LocalDateTime readAt;
     private LocalDateTime expiresAt;
     private String metadata;
-    
+
     public static NotificationResponse fromEntity(Notification notification) {
+        String metadataJson = null;
+        if (notification.getMetadata() != null) {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                metadataJson = objectMapper.writeValueAsString(notification.getMetadata());
+            } catch (JsonProcessingException e) {
+                metadataJson = null;
+            }
+        }
         return NotificationResponse.builder()
                 .id(notification.getId())
-                .recipient(notification.getRecipient() != null ? UserResponse.fromEntity(notification.getRecipient()) : null)
+                .recipient(notification.getRecipient() != null ? UserResponse.fromEntity(notification.getRecipient())
+                        : null)
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .type(notification.getType())
@@ -34,7 +46,7 @@ public class NotificationResponse {
                 .createdAt(notification.getCreatedAt())
                 .readAt(notification.getReadAt())
                 .expiresAt(notification.getExpiresAt())
-                .metadata(notification.getMetadata())
+                .metadata(metadataJson)
                 .build();
     }
 }

@@ -86,6 +86,13 @@ public class Invitation {
     @Builder.Default
     private InvitationStatus status = InvitationStatus.PENDING;
 
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
     // ========== INVITATION RESPONSE ==========
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -151,6 +158,7 @@ public class Invitation {
      */
     public void cancel() {
         this.status = InvitationStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
     }
 
     /**

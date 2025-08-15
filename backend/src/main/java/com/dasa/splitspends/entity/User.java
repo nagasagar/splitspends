@@ -1,3 +1,4 @@
+
 package com.dasa.splitspends.entity;
 
 import java.time.LocalDateTime;
@@ -223,6 +224,10 @@ public class User {
         return groups != null && groups.contains(group);
     }
 
+    public LocalDateTime getJoinedAt() {
+        return joinedAt;
+    }
+
     /**
      * Get unread notifications count
      */
@@ -299,6 +304,7 @@ public class User {
     public enum AccountStatus {
         ACTIVE("Active account"),
         SUSPENDED("Temporarily suspended"),
+        INACTIVE("Deactivated account"),
         DELETED("Soft deleted"),
         PENDING_VERIFICATION("Awaiting email verification");
 

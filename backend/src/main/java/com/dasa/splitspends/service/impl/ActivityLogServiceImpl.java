@@ -689,8 +689,8 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 .action(ActivityLog.Action.REJECT_SETTLEMENT)
                 .entityType(ActivityLog.EntityType.SETTLEMENT)
                 .entityId(settlement.getId())
-                .description(String.format("%s rejected settlement of $%.2f. Reason: %s", 
-                    user.getName(), settlement.getAmount(), reason))
+                .description(String.format("%s rejected settlement of $%.2f. Reason: %s",
+                        user.getName(), settlement.getAmount(), reason))
                 .build();
 
         return activityLogRepository.save(activityLog);
@@ -723,8 +723,8 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 .action(ActivityLog.Action.DECLINE_INVITATION)
                 .entityType(ActivityLog.EntityType.INVITATION)
                 .entityId(invitation.getId())
-                .description(String.format("%s declined invitation to join group. Reason: %s", 
-                    user.getName(), reason))
+                .description(String.format("%s declined invitation to join group. Reason: %s",
+                        user.getName(), reason))
                 .build();
 
         return activityLogRepository.save(activityLog);
@@ -741,8 +741,8 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 .action(ActivityLog.Action.CANCEL_INVITATION)
                 .entityType(ActivityLog.EntityType.INVITATION)
                 .entityId(invitation.getId())
-                .description(String.format("%s cancelled invitation to %s", 
-                    user.getName(), invitation.getEmail()))
+                .description(String.format("%s cancelled invitation to %s",
+                        user.getName(), invitation.getEmail()))
                 .build();
 
         return activityLogRepository.save(activityLog);

@@ -92,8 +92,15 @@ public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
 
         /**
          * Check if stored filename exists
+         *
          */
         boolean existsByStoredFilename(String storedFilename);
+
+        /**
+         * Find deleted attachments older than a given threshold
+         */
+        @Query("SELECT a FROM Attachment a WHERE a.deletedAt IS NOT NULL AND a.deletedAt < :threshold")
+        List<Attachment> findOldDeletedAttachments(@Param("threshold") LocalDateTime threshold);
 
         /**
          * Check if file path exists

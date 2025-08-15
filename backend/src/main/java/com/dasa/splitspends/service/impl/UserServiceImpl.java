@@ -380,4 +380,26 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findUsersNotInGroup(searchQuery, group);
     }
+
+    @Override
+    public User updateUserProfile(Long userId, String name, String phoneNumber, String profilePictureUrl) {
+        User user = getUserById(userId);
+        if (name != null && !name.trim().isEmpty()) {
+            user.setName(name);
+        }
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+            user.setPhoneNumber(phoneNumber);
+        }
+        if (profilePictureUrl != null && !profilePictureUrl.trim().isEmpty()) {
+            user.setProfilePictureUrl(profilePictureUrl);
+        }
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User deactivateUser(Long userId) {
+        User user = getUserById(userId);
+        user.setAccountStatus(User.AccountStatus.INACTIVE);
+        return userRepository.save(user);
+    }
 }

@@ -15,6 +15,7 @@ import com.dasa.splitspends.entity.Notification;
 import com.dasa.splitspends.entity.SettleUp;
 import com.dasa.splitspends.entity.User;
 import com.dasa.splitspends.repository.NotificationRepository;
+import com.dasa.splitspends.repository.UserRepository;
 import com.dasa.splitspends.service.NotificationService;
 
 @Service
@@ -22,14 +23,16 @@ import com.dasa.splitspends.service.NotificationService;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
-    public NotificationServiceImpl(NotificationRepository notificationRepository) {
+    public NotificationServiceImpl(NotificationRepository notificationRepository, UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
-    public Notification createNotification(User recipient, String title, String message, 
-                                         Notification.NotificationType type, Notification.Priority priority) {
+    public Notification createNotification(User recipient, String title, String message,
+            Notification.NotificationType type, Notification.Priority priority) {
         Notification notification = new Notification();
         notification.setRecipient(recipient);
         notification.setTitle(title);
@@ -38,7 +41,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setPriority(priority);
         notification.setIsRead(false);
         notification.setCreatedAt(LocalDateTime.now());
-        
+
         return notificationRepository.save(notification);
     }
 
@@ -58,11 +61,11 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public Notification markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
-            .orElseThrow(() -> new RuntimeException("Notification not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+
         notification.setIsRead(true);
         notification.setReadAt(LocalDateTime.now());
-        
+
         return notificationRepository.save(notification);
     }
 
@@ -90,14 +93,14 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendExpenseNotification(Expense expense) {
         String title = "New Expense Added";
-        String message = String.format("%s added expense: %s ($%.2f)", 
-            expense.getPaidBy().getName(), expense.getDescription(), expense.getAmount());
-        
+        String message = String.format("%s added expense: %s ($%.2f)",
+                expense.getPaidBy().getName(), expense.getDescription(), expense.getAmount());
+
         // Send to all group members except the one who created the expense
         expense.getGroup().getMembers().forEach(member -> {
             if (!member.getId().equals(expense.getPaidBy().getId())) {
-                createNotification(member, title, message, 
-                    Notification.NotificationType.EXPENSE_ADDED, Notification.Priority.NORMAL);
+                createNotification(member, title, message,
+                        Notification.NotificationType.EXPENSE_ADDED, Notification.Priority.NORMAL);
             }
         });
     }
@@ -105,13 +108,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendExpenseUpdatedNotification(Expense expense, User updatedBy) {
         String title = "Expense Updated";
-        String message = String.format("%s updated expense: %s", 
-            updatedBy.getName(), expense.getDescription());
-        
+        String message = String.format("%s updated expense: %s",
+                updatedBy.getName(), expense.getDescription());
+
         expense.getGroup().getMembers().forEach(member -> {
             if (!member.getId().equals(updatedBy.getId())) {
-                createNotification(member, title, message, 
-                    Notification.NotificationType.EXPENSE_UPDATED, Notification.Priority.NORMAL);
+                createNotification(member, title, message,
+                        Notification.NotificationType.EXPENSE_UPDATED, Notification.Priority.NORMAL);
             }
         });
     }
@@ -119,67 +122,65 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendSettlementNotification(SettleUp settlement) {
         String title = "Settlement Request";
-        String message = String.format("%s wants to settle $%.2f with you", 
-            settlement.getPayer().getName(), settlement.getAmount());
-        
-        createNotification(settlement.getPayee(), title, message, 
-            Notification.NotificationType.SETTLEMENT_REQUESTED, Notification.Priority.HIGH);
+        String message = String.format("%s wants to settle $%.2f with you",
+                settlement.getPayer().getName(), settlement.getAmount());
+
+        createNotification(settlement.getPayee(), title, message,
+                Notification.NotificationType.SETTLEMENT_REQUESTED, Notification.Priority.HIGH);
     }
 
     @Override
     public void sendSettlementConfirmedNotification(SettleUp settlement) {
         String title = "Settlement Confirmed";
-        String message = String.format("%s confirmed your settlement of $%.2f", 
-            settlement.getConfirmedBy().getName(), settlement.getAmount());
-        
-        createNotification(settlement.getPayer(), title, message, 
-            Notification.NotificationType.SETTLEMENT_CONFIRMED, Notification.Priority.NORMAL);
+        String message = String.format("%s confirmed your settlement of $%.2f",
+                settlement.getConfirmedBy().getName(), settlement.getAmount());
+
+        createNotification(settlement.getPayer(), title, message,
+                Notification.NotificationType.SETTLEMENT_CONFIRMED, Notification.Priority.NORMAL);
     }
 
     @Override
     public void sendSettlementRejectedNotification(SettleUp settlement) {
         String title = "Settlement Rejected";
-        String message = String.format("%s rejected your settlement of $%.2f", 
-            settlement.getPayee().getName(), settlement.getAmount());
-        
-        createNotification(settlement.getPayer(), title, message, 
-            Notification.NotificationType.SETTLEMENT_REJECTED, Notification.Priority.HIGH);
+        String message = String.format("%s rejected your settlement of $%.2f",
+                settlement.getPayee().getName(), settlement.getAmount());
+
+        createNotification(settlement.getPayer(), title, message,
+                Notification.NotificationType.SETTLEMENT_REJECTED, Notification.Priority.HIGH);
     }
 
     @Override
     public void sendSettlementReminderNotification(SettleUp settlement) {
         String title = "Settlement Reminder";
-        String message = String.format("Reminder: %s wants to settle $%.2f with you", 
-            settlement.getPayer().getName(), settlement.getAmount());
-        
-        createNotification(settlement.getPayee(), title, message, 
-            Notification.NotificationType.SETTLEMENT_REMINDER, Notification.Priority.NORMAL);
+        String message = String.format("Reminder: %s wants to settle $%.2f with you",
+                settlement.getPayer().getName(), settlement.getAmount());
+
+        createNotification(settlement.getPayee(), title, message,
+                Notification.NotificationType.SETTLEMENT_REMINDER, Notification.Priority.NORMAL);
     }
 
     @Override
     public void sendGroupInvitationNotification(Invitation invitation) {
         String title = "Group Invitation";
-        String message = String.format("%s invited you to join group: %s", 
-            invitation.getInvitedBy().getName(), invitation.getGroup().getName());
-        
-        // For invitations, we might send to email if user doesn't exist yet
-        // For now, assuming user exists
-        if (invitation.getInvitedUser() != null) {
-            createNotification(invitation.getInvitedUser(), title, message, 
-                Notification.NotificationType.GROUP_INVITATION, Notification.Priority.HIGH);
-        }
+        String message = String.format("%s invited you to join group: %s",
+                invitation.getInvitedBy().getName(), invitation.getGroup().getName());
+
+        // Look up user by invitation email
+        userRepository.findByEmail(invitation.getEmail())
+                .ifPresent(user -> createNotification(user, title, message,
+                        Notification.NotificationType.GROUP_INVITATION, Notification.Priority.HIGH));
     }
 
     @Override
     public void sendGroupMemberAddedNotification(Group group, User newMember, User addedBy) {
         String title = "New Group Member";
-        String message = String.format("%s added %s to group: %s", 
-            addedBy.getName(), newMember.getName(), group.getName());
-        
+        String message = String.format("%s added %s to group: %s",
+                addedBy.getName(), newMember.getName(), group.getName());
+
         group.getMembers().forEach(member -> {
             if (!member.getId().equals(addedBy.getId()) && !member.getId().equals(newMember.getId())) {
-                createNotification(member, title, message, 
-                    Notification.NotificationType.GROUP_MEMBER_ADDED, Notification.Priority.NORMAL);
+                createNotification(member, title, message,
+                        Notification.NotificationType.GROUP_MEMBER_ADDED, Notification.Priority.NORMAL);
             }
         });
     }

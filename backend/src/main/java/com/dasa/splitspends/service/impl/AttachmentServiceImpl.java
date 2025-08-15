@@ -1,7 +1,5 @@
 package com.dasa.splitspends.service.impl;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -40,9 +37,9 @@ public class AttachmentServiceImpl implements AttachmentService {
     private String uploadDir;
 
     public AttachmentServiceImpl(AttachmentRepository attachmentRepository,
-                                ExpenseRepository expenseRepository,
-                                UserRepository userRepository,
-                                ActivityLogService activityLogService) {
+            ExpenseRepository expenseRepository,
+            UserRepository userRepository,
+            ActivityLogService activityLogService) {
         this.attachmentRepository = attachmentRepository;
         this.expenseRepository = expenseRepository;
         this.userRepository = userRepository;
@@ -56,9 +53,9 @@ public class AttachmentServiceImpl implements AttachmentService {
         }
 
         Expense expense = expenseRepository.findById(expenseId)
-            .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
         User uploadedBy = userRepository.findById(uploadedByUserId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Validate file size (10MB limit)
         if (file.getSize() > 10 * 1024 * 1024) {
@@ -76,7 +73,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             String originalFilename = file.getOriginalFilename();
             String fileExtension = getFileExtension(originalFilename);
             String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
-            
+
             // Create upload directory if it doesn't exist
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
@@ -105,9 +102,9 @@ public class AttachmentServiceImpl implements AttachmentService {
             attachment.setCreatedAt(LocalDateTime.now());
 
             // Set file type based on content type
-            if (contentType.startsWith("image/")) {
+            if (contentType != null && contentType.startsWith("image/")) {
                 attachment.setAttachmentType(Attachment.AttachmentType.RECEIPT_IMAGE);
-            } else if (contentType.equals("application/pdf")) {
+            } else if ("application/pdf".equals(contentType)) {
                 attachment.setAttachmentType(Attachment.AttachmentType.PDF_DOCUMENT);
             } else {
                 attachment.setAttachmentType(Attachment.AttachmentType.OTHER);
@@ -128,8 +125,8 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public byte[] downloadFile(Long attachmentId, Long requestingUserId) {
         Attachment attachment = attachmentRepository.findById(attachmentId)
-            .orElseThrow(() -> new RuntimeException("Attachment not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Attachment not found"));
+
         // Validate user has access to this attachment
         validateUserAccess(attachment, requestingUserId);
 
@@ -144,9 +141,9 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public void deleteAttachment(Long attachmentId, Long deletedByUserId) {
         Attachment attachment = attachmentRepository.findById(attachmentId)
-            .orElseThrow(() -> new RuntimeException("Attachment not found"));
+                .orElseThrow(() -> new RuntimeException("Attachment not found"));
         User deletedBy = userRepository.findById(deletedByUserId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Validate user has access to delete this attachment
         validateUserAccess(attachment, deletedByUserId);
@@ -162,21 +159,21 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public List<Attachment> getExpenseAttachments(Long expenseId) {
         Expense expense = expenseRepository.findById(expenseId)
-            .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
         return attachmentRepository.findActiveByExpense(expense);
     }
 
     @Override
     public List<Attachment> getUserAttachments(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return attachmentRepository.findActiveByUser(user);
     }
 
     @Override
     public long getTotalStorageUsedByUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return attachmentRepository.getTotalStorageByUser(user);
     }
 
@@ -184,15 +181,15 @@ public class AttachmentServiceImpl implements AttachmentService {
     public List<Attachment> getAttachmentsByType(Attachment.AttachmentType attachmentType) {
         // For now, return all attachments - can be optimized later
         return attachmentRepository.findAll().stream()
-            .filter(a -> a.getAttachmentType() == attachmentType && a.getDeletedAt() == null)
-            .sorted((a1, a2) -> a2.getCreatedAt().compareTo(a1.getCreatedAt()))
-            .toList();
+                .filter(a -> a.getAttachmentType() == attachmentType && a.getDeletedAt() == null)
+                .sorted((a1, a2) -> a2.getCreatedAt().compareTo(a1.getCreatedAt()))
+                .toList();
     }
 
     @Override
     public Attachment getAttachmentById(Long attachmentId) {
         return attachmentRepository.findById(attachmentId)
-            .orElseThrow(() -> new RuntimeException("Attachment not found"));
+                .orElseThrow(() -> new RuntimeException("Attachment not found"));
     }
 
     @Override
@@ -204,7 +201,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     public void cleanupDeletedFiles(int daysOld) {
         LocalDateTime threshold = LocalDateTime.now().minusDays(daysOld);
         List<Attachment> attachments = attachmentRepository.findOldDeletedAttachments(threshold);
-        
+
         for (Attachment attachment : attachments) {
             try {
                 // Delete physical file
@@ -221,13 +218,14 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private boolean isValidFileType(String contentType) {
-        if (contentType == null) return false;
-        
-        return contentType.startsWith("image/") || 
-               contentType.equals("application/pdf") ||
-               contentType.equals("text/plain") ||
-               contentType.equals("application/msword") ||
-               contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        if (contentType == null)
+            return false;
+
+        return contentType.startsWith("image/") ||
+                contentType.equals("application/pdf") ||
+                contentType.equals("text/plain") ||
+                contentType.equals("application/msword") ||
+                contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
     }
 
     private String getFileExtension(String filename) {
@@ -254,9 +252,9 @@ public class AttachmentServiceImpl implements AttachmentService {
     private void validateUserAccess(Attachment attachment, Long userId) {
         // User can access attachment if they are a member of the expense's group
         boolean hasAccess = attachment.getExpense().getGroup().getMembers()
-            .stream()
-            .anyMatch(member -> member.getId().equals(userId));
-            
+                .stream()
+                .anyMatch(member -> member.getId().equals(userId));
+
         if (!hasAccess) {
             throw new RuntimeException("Access denied to this attachment");
         }

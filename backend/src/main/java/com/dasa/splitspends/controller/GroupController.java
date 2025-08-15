@@ -1,6 +1,5 @@
 package com.dasa.splitspends.controller;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -41,12 +40,11 @@ public class GroupController {
     @PostMapping
     public ResponseEntity<GroupResponse> createGroup(@Valid @RequestBody GroupRequest request) {
         Group group = groupService.createGroup(
-            request.getName(),
-            request.getDescription(),
-            request.getCreatedByUserId(),
-            request.getPrivacyLevel(),
-            request.getDefaultCurrency()
-        );
+                request.getName(),
+                request.getDescription(),
+                request.getCreatedByUserId(),
+                request.getPrivacyLevel(),
+                request.getDefaultCurrency());
         return ResponseEntity.ok(GroupResponse.fromEntity(group));
     }
 
@@ -61,13 +59,12 @@ public class GroupController {
             @PathVariable Long groupId,
             @Valid @RequestBody GroupRequest request) {
         Group group = groupService.updateGroup(
-            groupId,
-            request.getName(),
-            request.getDescription(),
-            request.getPrivacyLevel(),
-            request.getDefaultCurrency(),
-            request.getUpdatedByUserId()
-        );
+                groupId,
+                request.getName(),
+                request.getDescription(),
+                request.getPrivacyLevel(),
+                request.getDefaultCurrency(),
+                request.getUpdatedByUserId());
         return ResponseEntity.ok(GroupResponse.fromEntity(group));
     }
 
@@ -181,12 +178,11 @@ public class GroupController {
             @PathVariable Long groupId,
             @Valid @RequestBody GroupSettingsRequest request) {
         Group group = groupService.updateGroupSettings(
-            groupId,
-            request.getInvitationPolicy(),
-            request.getAutoSettleThreshold(),
-            request.getAllowExternalPayments(),
-            request.getUpdatedByUserId()
-        );
+                groupId,
+                request.getInvitationPolicy(),
+                request.getAutoSettleThreshold(),
+                request.getAllowExternalPayments(),
+                request.getUpdatedByUserId());
         return ResponseEntity.ok(GroupResponse.fromEntity(group));
     }
 

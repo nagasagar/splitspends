@@ -219,6 +219,26 @@ public interface UserService {
     List<User> getUsersForGroupInvitation(String searchQuery, Long groupId);
 
     /**
+     * Updates the user's profile information including name, phone number, and
+     * profile picture URL.
+     *
+     * @param userId            the user's ID
+     * @param name              the new name (nullable)
+     * @param phoneNumber       the new phone number (nullable)
+     * @param profilePictureUrl the new profile picture URL (nullable)
+     * @return the updated User entity
+     */
+    User updateUserProfile(Long userId, String name, String phoneNumber, String profilePictureUrl);
+
+    /**
+     * Deactivates a user account by setting its status to INACTIVE.
+     *
+     * @param userId the user's ID
+     * @return the updated User entity
+     */
+    User deactivateUser(Long userId);
+
+    /**
      * DTO for user statistics.
      */
     @lombok.Builder
@@ -233,4 +253,5 @@ public interface UserService {
         private Boolean isGoogleUser;
         private LocalDateTime lastLoginAt;
     }
+
 }

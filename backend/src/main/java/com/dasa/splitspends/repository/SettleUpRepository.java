@@ -1,3 +1,4 @@
+
 package com.dasa.splitspends.repository;
 
 import java.math.BigDecimal;
@@ -19,210 +20,246 @@ import com.dasa.splitspends.entity.User;
 @Repository
 public interface SettleUpRepository extends JpaRepository<SettleUp, Long> {
 
-    // ========== BASIC QUERIES ==========
+        /**
+         * Find settlements where user is payer or payee (either direction), ordered by
+         * createdAt desc
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.payer = :user1 OR s.payee = :user2 OR s.payer = :user2 OR s.payee = :user1 ORDER BY s.createdAt DESC")
+        List<SettleUp> findByPayerOrPayeeOrderByCreatedAtDesc(@Param("user1") User user1, @Param("user2") User user2);
 
-    /**
-     * Find settlements by group
-     */
-    List<SettleUp> findByGroupOrderByCreatedAtDesc(Group group);
+        /**
+         * Find recent settlements for a group, limited by count
+         */
 
-    /**
-     * Find settlements by payer
-     */
-    List<SettleUp> findByPayerOrderByCreatedAtDesc(User payer);
+        /**
+         * Find settlements where user is payer or payee, ordered by createdAt desc
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.payer = :user OR s.payee = :user ORDER BY s.createdAt DESC")
+        List<SettleUp> findByPayerOrPayeeOrderByCreatedAtDesc(@Param("user") User user);
 
-    /**
-     * Find settlements by payee
-     */
-    List<SettleUp> findByPayeeOrderByCreatedAtDesc(User payee);
+        /**
+         * Get total confirmed amount for a user as payer
+         */
+        @Query("SELECT COALESCE(SUM(s.amount), 0) FROM SettleUp s WHERE s.payer = :user AND s.status = 'CONFIRMED'")
+        BigDecimal getTotalConfirmedAmountByPayer(@Param("user") User user);
 
-    /**
-     * Find settlements by status
-     */
-    List<SettleUp> findByStatusOrderByCreatedAtDesc(SettleUp.SettlementStatus status);
+        /**
+         * Get total pending amount for a user as payer
+         */
+        @Query("SELECT COALESCE(SUM(s.amount), 0) FROM SettleUp s WHERE s.payer = :user AND s.status = 'PENDING'")
+        BigDecimal getTotalPendingAmountByPayer(@Param("user") User user);
 
-    // ========== USER-SPECIFIC QUERIES ==========
+        /**
+         * Find recent settlements for a group, limited by count
+         */
+        @Query(value = "SELECT s FROM SettleUp s WHERE s.group = :group ORDER BY s.createdAt DESC")
+        List<SettleUp> findRecentByGroup(@Param("group") Group group,
+                        org.springframework.data.domain.Pageable pageable);
 
-    /**
-     * Find all settlements where user is either payer or payee
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.payer = :user OR s.payee = :user ORDER BY s.createdAt DESC")
-    List<SettleUp> findByUserInvolved(@Param("user") User user);
+        // ========== BASIC QUERIES ==========
 
-    /**
-     * Find pending settlements for a user (where they need to take action)
-     */
-    @Query("SELECT s FROM SettleUp s WHERE (s.payer = :user OR s.payee = :user) " +
-            "AND s.status = 'PENDING' ORDER BY s.createdAt DESC")
-    List<SettleUp> findPendingByUser(@Param("user") User user);
+        /**
+         * Find settlements by group
+         */
+        List<SettleUp> findByGroupOrderByCreatedAtDesc(Group group);
 
-    /**
-     * Find settlements where user is payer and status is pending
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.payer = :user AND s.status = 'PENDING' " +
-            "ORDER BY s.createdAt DESC")
-    List<SettleUp> findPendingByPayer(@Param("user") User user);
+        /**
+         * Find settlements by payer
+         */
+        List<SettleUp> findByPayerOrderByCreatedAtDesc(User payer);
 
-    /**
-     * Find settlements where user is payee and status is pending
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.payee = :user AND s.status = 'PENDING' " +
-            "ORDER BY s.createdAt DESC")
-    List<SettleUp> findPendingByPayee(@Param("user") User user);
+        /**
+         * Find settlements by payee
+         */
+        List<SettleUp> findByPayeeOrderByCreatedAtDesc(User payee);
 
-    // ========== GROUP-SPECIFIC QUERIES ==========
+        /**
+         * Find settlements by status
+         */
+        List<SettleUp> findByStatusOrderByCreatedAtDesc(SettleUp.SettlementStatus status);
 
-    /**
-     * Find settlements in a group with pagination
-     */
-    Page<SettleUp> findByGroupOrderByCreatedAtDesc(Group group, Pageable pageable);
+        // ========== USER-SPECIFIC QUERIES ==========
 
-    /**
-     * Find pending settlements in a group
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.group = :group AND s.status = 'PENDING' " +
-            "ORDER BY s.createdAt DESC")
-    List<SettleUp> findPendingByGroup(@Param("group") Group group);
+        /**
+         * Find all settlements where user is either payer or payee
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.payer = :user OR s.payee = :user ORDER BY s.createdAt DESC")
+        List<SettleUp> findByUserInvolved(@Param("user") User user);
 
-    /**
-     * Find completed settlements in a group
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.group = :group AND s.status = 'COMPLETED' " +
-            "ORDER BY s.confirmedAt DESC")
-    List<SettleUp> findCompletedByGroup(@Param("group") Group group);
+        /**
+         * Find pending settlements for a user (where they need to take action)
+         */
+        @Query("SELECT s FROM SettleUp s WHERE (s.payer = :user OR s.payee = :user) " +
+                        "AND s.status = 'PENDING' ORDER BY s.createdAt DESC")
+        List<SettleUp> findPendingByUser(@Param("user") User user);
 
-    /**
-     * Find settlements between two specific users in a group
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.group = :group " +
-            "AND ((s.payer = :user1 AND s.payee = :user2) OR (s.payer = :user2 AND s.payee = :user1)) " +
-            "ORDER BY s.createdAt DESC")
-    List<SettleUp> findBetweenUsersInGroup(@Param("group") Group group,
-            @Param("user1") User user1,
-            @Param("user2") User user2);
+        /**
+         * Find settlements where user is payer and status is pending
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.payer = :user AND s.status = 'PENDING' " +
+                        "ORDER BY s.createdAt DESC")
+        List<SettleUp> findPendingByPayer(@Param("user") User user);
 
-    // ========== AMOUNT-BASED QUERIES ==========
+        /**
+         * Find settlements where user is payee and status is pending
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.payee = :user AND s.status = 'PENDING' " +
+                        "ORDER BY s.createdAt DESC")
+        List<SettleUp> findPendingByPayee(@Param("user") User user);
 
-    /**
-     * Find settlements by amount range
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.amount BETWEEN :minAmount AND :maxAmount " +
-            "ORDER BY s.amount DESC")
-    List<SettleUp> findByAmountRange(@Param("minAmount") BigDecimal minAmount,
-            @Param("maxAmount") BigDecimal maxAmount);
+        // ========== GROUP-SPECIFIC QUERIES ==========
 
-    /**
-     * Get total settlement amount for a user (as payer)
-     */
-    @Query("SELECT COALESCE(SUM(s.amount), 0) FROM SettleUp s WHERE s.payer = :user AND s.status = 'COMPLETED'")
-    BigDecimal getTotalPaidByUser(@Param("user") User user);
+        /**
+         * Find settlements in a group with pagination
+         */
+        Page<SettleUp> findByGroupOrderByCreatedAtDesc(Group group, Pageable pageable);
 
-    /**
-     * Get total settlement amount received by a user (as payee)
-     */
-    @Query("SELECT COALESCE(SUM(s.amount), 0) FROM SettleUp s WHERE s.payee = :user AND s.status = 'COMPLETED'")
-    BigDecimal getTotalReceivedByUser(@Param("user") User user);
+        /**
+         * Find pending settlements in a group
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.group = :group AND s.status = 'PENDING' " +
+                        "ORDER BY s.createdAt DESC")
+        List<SettleUp> findPendingByGroup(@Param("group") Group group);
 
-    /**
-     * Get pending settlement amount for a user (as payer)
-     */
-    @Query("SELECT COALESCE(SUM(s.amount), 0) FROM SettleUp s WHERE s.payer = :user AND s.status = 'PENDING'")
-    BigDecimal getPendingAmountByPayer(@Param("user") User user);
+        /**
+         * Find completed settlements in a group
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.group = :group AND s.status = 'COMPLETED' " +
+                        "ORDER BY s.confirmedAt DESC")
+        List<SettleUp> findCompletedByGroup(@Param("group") Group group);
 
-    // ========== DATE-BASED QUERIES ==========
+        /**
+         * Find settlements between two specific users in a group
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.group = :group " +
+                        "AND ((s.payer = :user1 AND s.payee = :user2) OR (s.payer = :user2 AND s.payee = :user1)) " +
+                        "ORDER BY s.createdAt DESC")
+        List<SettleUp> findBetweenUsersInGroup(@Param("group") Group group,
+                        @Param("user1") User user1,
+                        @Param("user2") User user2);
 
-    /**
-     * Find settlements created within date range
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.createdAt BETWEEN :startDate AND :endDate " +
-            "ORDER BY s.createdAt DESC")
-    List<SettleUp> findByDateRange(@Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
+        // ========== AMOUNT-BASED QUERIES ==========
 
-    /**
-     * Find settlements confirmed within date range
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.confirmedAt BETWEEN :startDate AND :endDate " +
-            "ORDER BY s.confirmedAt DESC")
-    List<SettleUp> findConfirmedInDateRange(@Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
+        /**
+         * Find settlements by amount range
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.amount BETWEEN :minAmount AND :maxAmount " +
+                        "ORDER BY s.amount DESC")
+        List<SettleUp> findByAmountRange(@Param("minAmount") BigDecimal minAmount,
+                        @Param("maxAmount") BigDecimal maxAmount);
 
-    /**
-     * Find recent settlements for a group (last 30 days)
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.group = :group " +
-            "AND s.createdAt >= :thirtyDaysAgo ORDER BY s.createdAt DESC")
-    List<SettleUp> findRecentByGroup(@Param("group") Group group,
-            @Param("thirtyDaysAgo") LocalDateTime thirtyDaysAgo);
+        /**
+         * Get total settlement amount for a user (as payer)
+         */
+        @Query("SELECT COALESCE(SUM(s.amount), 0) FROM SettleUp s WHERE s.payer = :user AND s.status = 'COMPLETED'")
+        BigDecimal getTotalPaidByUser(@Param("user") User user);
 
-    // ========== STATISTICS QUERIES ==========
+        /**
+         * Get total settlement amount received by a user (as payee)
+         */
+        @Query("SELECT COALESCE(SUM(s.amount), 0) FROM SettleUp s WHERE s.payee = :user AND s.status = 'COMPLETED'")
+        BigDecimal getTotalReceivedByUser(@Param("user") User user);
 
-    /**
-     * Count settlements by status for a group
-     */
-    @Query("SELECT COUNT(s) FROM SettleUp s WHERE s.group = :group AND s.status = :status")
-    long countByGroupAndStatus(@Param("group") Group group, @Param("status") SettleUp.SettlementStatus status);
+        /**
+         * Get pending settlement amount for a user (as payer)
+         */
+        @Query("SELECT COALESCE(SUM(s.amount), 0) FROM SettleUp s WHERE s.payer = :user AND s.status = 'PENDING'")
+        BigDecimal getPendingAmountByPayer(@Param("user") User user);
 
-    /**
-     * Count pending settlements for a user
-     */
-    @Query("SELECT COUNT(s) FROM SettleUp s WHERE (s.payer = :user OR s.payee = :user) AND s.status = 'PENDING'")
-    long countPendingByUser(@Param("user") User user);
+        // ========== DATE-BASED QUERIES ==========
 
-    /**
-     * Get average settlement amount for a group
-     */
-    @Query("SELECT AVG(s.amount) FROM SettleUp s WHERE s.group = :group AND s.status = 'COMPLETED'")
-    Optional<BigDecimal> getAverageSettlementAmountByGroup(@Param("group") Group group);
+        /**
+         * Find settlements created within date range
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.createdAt BETWEEN :startDate AND :endDate " +
+                        "ORDER BY s.createdAt DESC")
+        List<SettleUp> findByDateRange(@Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate);
 
-    // ========== PAYMENT METHOD QUERIES ==========
+        /**
+         * Find settlements confirmed within date range
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.confirmedAt BETWEEN :startDate AND :endDate " +
+                        "ORDER BY s.confirmedAt DESC")
+        List<SettleUp> findConfirmedInDateRange(@Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate);
 
-    /**
-     * Find settlements by payment method
-     */
-    List<SettleUp> findByPaymentMethodOrderByCreatedAtDesc(SettleUp.PaymentMethod paymentMethod);
+        /**
+         * Find recent settlements for a group (last 30 days)
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.group = :group " +
+                        "AND s.createdAt >= :thirtyDaysAgo ORDER BY s.createdAt DESC")
+        List<SettleUp> findRecentByGroup(@Param("group") Group group,
+                        @Param("thirtyDaysAgo") LocalDateTime thirtyDaysAgo);
 
-    /**
-     * Find settlements by payment method in a group
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.group = :group AND s.paymentMethod = :paymentMethod " +
-            "ORDER BY s.createdAt DESC")
-    List<SettleUp> findByGroupAndPaymentMethod(@Param("group") Group group,
-            @Param("paymentMethod") SettleUp.PaymentMethod paymentMethod);
+        // ========== STATISTICS QUERIES ==========
 
-    // ========== EXTERNAL TRANSACTION QUERIES ==========
+        /**
+         * Count settlements by status for a group
+         */
+        @Query("SELECT COUNT(s) FROM SettleUp s WHERE s.group = :group AND s.status = :status")
+        long countByGroupAndStatus(@Param("group") Group group, @Param("status") SettleUp.SettlementStatus status);
 
-    /**
-     * Find settlement by external transaction ID
-     */
-    Optional<SettleUp> findByExternalTransactionId(String externalTransactionId);
+        /**
+         * Count pending settlements for a user
+         */
+        @Query("SELECT COUNT(s) FROM SettleUp s WHERE (s.payer = :user OR s.payee = :user) AND s.status = 'PENDING'")
+        long countPendingByUser(@Param("user") User user);
 
-    /**
-     * Check if external transaction ID exists
-     */
-    boolean existsByExternalTransactionId(String externalTransactionId);
+        /**
+         * Get average settlement amount for a group
+         */
+        @Query("SELECT AVG(s.amount) FROM SettleUp s WHERE s.group = :group AND s.status = 'COMPLETED'")
+        Optional<BigDecimal> getAverageSettlementAmountByGroup(@Param("group") Group group);
 
-    // ========== COMPLEX BUSINESS QUERIES ==========
+        // ========== PAYMENT METHOD QUERIES ==========
 
-    /**
-     * Find settlements that need reminder (pending for more than X days)
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.status = 'PENDING' " +
-            "AND s.createdAt < :reminderThreshold ORDER BY s.createdAt ASC")
-    List<SettleUp> findSettlementsNeedingReminder(@Param("reminderThreshold") LocalDateTime reminderThreshold);
+        /**
+         * Find settlements by payment method
+         */
+        List<SettleUp> findByPaymentMethodOrderByCreatedAtDesc(SettleUp.PaymentMethod paymentMethod);
 
-    /**
-     * Find expired pending settlements (pending for more than 30 days)
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.status = 'PENDING' " +
-            "AND s.createdAt < :expirationThreshold ORDER BY s.createdAt ASC")
-    List<SettleUp> findExpiredPendingSettlements(@Param("expirationThreshold") LocalDateTime expirationThreshold);
+        /**
+         * Find settlements by payment method in a group
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.group = :group AND s.paymentMethod = :paymentMethod " +
+                        "ORDER BY s.createdAt DESC")
+        List<SettleUp> findByGroupAndPaymentMethod(@Param("group") Group group,
+                        @Param("paymentMethod") SettleUp.PaymentMethod paymentMethod);
 
-    /**
-     * Get settlement summary for a user in a group
-     */
-    @Query("SELECT s FROM SettleUp s WHERE s.group = :group " +
-            "AND (s.payer = :user OR s.payee = :user) " +
-            "ORDER BY s.createdAt DESC")
-    List<SettleUp> getUserSettlementSummaryInGroup(@Param("group") Group group, @Param("user") User user);
+        // ========== EXTERNAL TRANSACTION QUERIES ==========
+
+        /**
+         * Find settlement by external transaction ID
+         */
+        Optional<SettleUp> findByExternalTransactionId(String externalTransactionId);
+
+        /**
+         * Check if external transaction ID exists
+         */
+        boolean existsByExternalTransactionId(String externalTransactionId);
+
+        // ========== COMPLEX BUSINESS QUERIES ==========
+
+        /**
+         * Find settlements that need reminder (pending for more than X days)
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.status = 'PENDING' " +
+                        "AND s.createdAt < :reminderThreshold ORDER BY s.createdAt ASC")
+        List<SettleUp> findSettlementsNeedingReminder(@Param("reminderThreshold") LocalDateTime reminderThreshold);
+
+        /**
+         * Find expired pending settlements (pending for more than 30 days)
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.status = 'PENDING' " +
+                        "AND s.createdAt < :expirationThreshold ORDER BY s.createdAt ASC")
+        List<SettleUp> findExpiredPendingSettlements(@Param("expirationThreshold") LocalDateTime expirationThreshold);
+
+        /**
+         * Get settlement summary for a user in a group
+         */
+        @Query("SELECT s FROM SettleUp s WHERE s.group = :group " +
+                        "AND (s.payer = :user OR s.payee = :user) " +
+                        "ORDER BY s.createdAt DESC")
+        List<SettleUp> getUserSettlementSummaryInGroup(@Param("group") Group group, @Param("user") User user);
 }
