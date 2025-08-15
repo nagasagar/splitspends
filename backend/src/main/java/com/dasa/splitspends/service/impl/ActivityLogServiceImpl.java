@@ -660,4 +660,107 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 ActivityLog.EntityType.ATTACHMENT, attachment.getId(),
                 description, group);
     }
+    // ========== ADDITIONAL METHODS FOR SERVICE IMPLEMENTATIONS ==========
+
+    /**
+     * Log settlement created (simpler signature)
+     */
+    @Override
+    public ActivityLog logSettlementCreated(SettleUp settlement, User user) {
+        return logSettlementRequested(user, settlement.getGroup(), settlement);
+    }
+
+    /**
+     * Log settlement confirmed (simpler signature)
+     */
+    @Override
+    public ActivityLog logSettlementConfirmed(SettleUp settlement, User user) {
+        return logSettlementCompleted(user, settlement.getGroup(), settlement);
+    }
+
+    /**
+     * Log settlement rejected with reason (simpler signature)
+     */
+    @Override
+    public ActivityLog logSettlementRejected(SettleUp settlement, User user, String reason) {
+        ActivityLog activityLog = ActivityLog.builder()
+                .user(user)
+                .group(settlement.getGroup())
+                .action(ActivityLog.Action.REJECT_SETTLEMENT)
+                .entityType(ActivityLog.EntityType.SETTLEMENT)
+                .entityId(settlement.getId())
+                .description(String.format("%s rejected settlement of $%.2f. Reason: %s", 
+                    user.getName(), settlement.getAmount(), reason))
+                .build();
+
+        return activityLogRepository.save(activityLog);
+    }
+
+    /**
+     * Log invitation sent (simpler signature)
+     */
+    @Override
+    public ActivityLog logInvitationSent(Invitation invitation, User user) {
+        return logInvitationSent(user, invitation.getGroup(), invitation);
+    }
+
+    /**
+     * Log invitation accepted (simpler signature)
+     */
+    @Override
+    public ActivityLog logInvitationAccepted(Invitation invitation, User user) {
+        return logInvitationAccepted(user, invitation.getGroup(), invitation);
+    }
+
+    /**
+     * Log invitation declined with reason (simpler signature)
+     */
+    @Override
+    public ActivityLog logInvitationDeclined(Invitation invitation, User user, String reason) {
+        ActivityLog activityLog = ActivityLog.builder()
+                .user(user)
+                .group(invitation.getGroup())
+                .action(ActivityLog.Action.DECLINE_INVITATION)
+                .entityType(ActivityLog.EntityType.INVITATION)
+                .entityId(invitation.getId())
+                .description(String.format("%s declined invitation to join group. Reason: %s", 
+                    user.getName(), reason))
+                .build();
+
+        return activityLogRepository.save(activityLog);
+    }
+
+    /**
+     * Log invitation cancelled
+     */
+    @Override
+    public ActivityLog logInvitationCancelled(Invitation invitation, User user) {
+        ActivityLog activityLog = ActivityLog.builder()
+                .user(user)
+                .group(invitation.getGroup())
+                .action(ActivityLog.Action.CANCEL_INVITATION)
+                .entityType(ActivityLog.EntityType.INVITATION)
+                .entityId(invitation.getId())
+                .description(String.format("%s cancelled invitation to %s", 
+                    user.getName(), invitation.getEmail()))
+                .build();
+
+        return activityLogRepository.save(activityLog);
+    }
+
+    /**
+     * Log attachment uploaded (simpler signature)
+     */
+    @Override
+    public ActivityLog logAttachmentUploaded(Attachment attachment, User user) {
+        return logAttachmentUploaded(user, attachment.getExpense().getGroup(), attachment);
+    }
+
+    /**
+     * Log attachment deleted (simpler signature)
+     */
+    @Override
+    public ActivityLog logAttachmentDeleted(Attachment attachment, User user) {
+        return logAttachmentDeleted(user, attachment.getExpense().getGroup(), attachment);
+    }
 }
