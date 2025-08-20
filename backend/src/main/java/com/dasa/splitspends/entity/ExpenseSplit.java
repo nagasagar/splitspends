@@ -1,4 +1,7 @@
+
 package com.dasa.splitspends.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -49,11 +52,13 @@ public class ExpenseSplit {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expense_id", nullable = false)
+    @JsonIgnore
     private Expense expense;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @NotNull
@@ -80,6 +85,7 @@ public class ExpenseSplit {
     // User who marked this split as settled (for audit trail)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "settled_by")
+    @JsonIgnore
     private User settledBy;
 
     // Optional note when settling (e.g., "Paid via UPI")

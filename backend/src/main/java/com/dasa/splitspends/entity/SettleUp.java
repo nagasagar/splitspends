@@ -1,9 +1,12 @@
+
 package com.dasa.splitspends.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,16 +54,19 @@ public class SettleUp {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonIgnore
     private Group group;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payer_id", nullable = false)
+    @JsonIgnore
     private User payer; // Person who will pay
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payee_id", nullable = false)
+    @JsonIgnore
     private User payee; // Person who will receive payment
 
     @NotNull
@@ -95,6 +101,7 @@ public class SettleUp {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiated_by")
+    @JsonIgnore
     private User initiatedBy;
 
     @CreationTimestamp
@@ -106,6 +113,7 @@ public class SettleUp {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "confirmed_by")
+    @JsonIgnore
     private User confirmedBy;
 
     @Column(name = "rejected_at")
@@ -113,6 +121,7 @@ public class SettleUp {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rejected_by")
+    @JsonIgnore
     private User rejectedBy;
 
     @Size(max = 500, message = "Rejection reason cannot exceed 500 characters")

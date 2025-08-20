@@ -1,3 +1,4 @@
+
 package com.dasa.splitspends.entity;
 
 import java.time.LocalDateTime;
@@ -6,6 +7,8 @@ import java.util.Map;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -52,6 +55,7 @@ public class Notification {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipient_id", nullable = false)
+    @JsonIgnore
     private User recipient;
 
     // ========== NOTIFICATION CONTENT ==========
@@ -74,18 +78,22 @@ public class Notification {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "triggered_by")
+    @JsonIgnore
     private User triggeredBy; // User who caused this notification
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
+    @JsonIgnore
     private Group group; // Related group (if applicable)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expense_id")
+    @JsonIgnore
     private Expense expense; // Related expense (if applicable)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "settle_up_id")
+    @JsonIgnore
     private SettleUp settleUp; // Related settlement (if applicable)
 
     // Store additional context data as JSON

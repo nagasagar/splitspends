@@ -1,8 +1,11 @@
+
 package com.dasa.splitspends.entity;
 
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -52,11 +55,13 @@ public class Invitation {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonIgnore
     private Group group;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invited_by", nullable = false)
+    @JsonIgnore
     private User invitedBy;
 
     @NotBlank(message = "Email is required")
@@ -97,6 +102,7 @@ public class Invitation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accepted_by")
+    @JsonIgnore
     private User acceptedBy; // User who accepted (if they had an account)
 
     @Column(name = "accepted_at")

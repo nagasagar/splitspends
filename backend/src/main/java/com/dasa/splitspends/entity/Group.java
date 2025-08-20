@@ -8,6 +8,8 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -129,15 +131,18 @@ public class Group {
             @Index(name = "idx_group_members_user", columnList = "user_id")
     })
     @Builder.Default
+    @JsonIgnore
     private Set<User> members = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "group_admins", joinColumns = @JoinColumn(name = "group_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     @Builder.Default
+    @JsonIgnore
     private Set<User> admins = new HashSet<>();
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private Set<Expense> expenses = new HashSet<>();
 
     // ========== BUSINESS LOGIC METHODS ==========

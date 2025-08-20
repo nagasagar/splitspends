@@ -1,8 +1,11 @@
+
 package com.dasa.splitspends.entity;
 
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,11 +53,13 @@ public class Attachment {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expense_id", nullable = false)
+    @JsonIgnore
     private Expense expense;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by", nullable = false)
+    @JsonIgnore
     private User uploadedBy;
 
     // ========== FILE INFORMATION ==========

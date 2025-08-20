@@ -25,7 +25,7 @@ public class SettlementResponse {
     private LocalDateTime confirmedAt;
     private LocalDateTime rejectedAt;
     private UserResponse confirmedBy;
-    
+
     public static SettlementResponse fromEntity(SettleUp settlement) {
         return SettlementResponse.builder()
                 .id(settlement.getId())
@@ -36,12 +36,13 @@ public class SettlementResponse {
                 .description(settlement.getDescription())
                 .paymentMethod(settlement.getPaymentMethod())
                 .status(settlement.getStatus())
-                .transactionId(settlement.getTransactionId())
+                .transactionId(settlement.getExternalTransactionId())
                 .rejectionReason(settlement.getRejectionReason())
                 .createdAt(settlement.getCreatedAt())
                 .confirmedAt(settlement.getConfirmedAt())
                 .rejectedAt(settlement.getRejectedAt())
-                .confirmedBy(settlement.getConfirmedBy() != null ? UserResponse.fromEntity(settlement.getConfirmedBy()) : null)
+                .confirmedBy(settlement.getConfirmedBy() != null ? UserResponse.fromEntity(settlement.getConfirmedBy())
+                        : null)
                 .build();
     }
 }

@@ -1,3 +1,4 @@
+
 package com.dasa.splitspends.entity;
 
 import java.math.BigDecimal;
@@ -7,6 +8,8 @@ import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -56,6 +59,7 @@ public class Expense {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonIgnore
     private Group group;
 
     @NotBlank(message = "Description is required")
@@ -75,6 +79,7 @@ public class Expense {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "paid_by", nullable = false)
+    @JsonIgnore
     private User paidBy;
 
     // Receipt/attachment support
@@ -108,11 +113,13 @@ public class Expense {
     // Splits relationship
     @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private Set<ExpenseSplit> splits = new HashSet<>();
 
     // Attachments relationship (receipts, invoices, etc.)
     @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private Set<Attachment> attachments = new HashSet<>();
 
     // ========== AUDIT FIELDS ==========
@@ -127,10 +134,12 @@ public class Expense {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
+    @JsonIgnore
     private User createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
+    @JsonIgnore
     private User updatedBy;
 
     // ========== BUSINESS LOGIC ==========

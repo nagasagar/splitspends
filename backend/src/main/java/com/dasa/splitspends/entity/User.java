@@ -1,4 +1,3 @@
-
 package com.dasa.splitspends.entity;
 
 import java.time.LocalDateTime;
@@ -7,6 +6,8 @@ import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -133,36 +134,45 @@ public class User {
     // ========== RELATIONSHIPS ==========
 
     @OneToMany(mappedBy = "paidBy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Expense> expensesPaid;
 
     @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Group> groups;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<ExpenseSplit> expenseSplits;
 
     // Notifications received by this user
     @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Notification> notifications;
 
     // Activity logs for actions performed by this user
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<ActivityLog> activityLogs;
 
     // Invitations sent by this user
     @OneToMany(mappedBy = "invitedBy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Invitation> invitationsSent;
 
     // Settlements where this user is the payer
     @OneToMany(mappedBy = "payer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<SettleUp> settlementsAsPayer;
 
     // Settlements where this user is the payee
     @OneToMany(mappedBy = "payee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<SettleUp> settlementsAsPayee;
 
     // Attachments uploaded by this user
     @OneToMany(mappedBy = "uploadedBy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Attachment> uploadedAttachments;
 
     // ========== BUSINESS LOGIC METHODS ==========

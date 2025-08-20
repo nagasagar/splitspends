@@ -1,3 +1,4 @@
+
 package com.dasa.splitspends.entity;
 
 import java.time.LocalDateTime;
@@ -6,6 +7,8 @@ import java.util.Map;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,10 +56,12 @@ public class ActivityLog {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user; // User who performed the action
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
+    @JsonIgnore
     private Group group; // Related group (if applicable)
 
     @CreationTimestamp
