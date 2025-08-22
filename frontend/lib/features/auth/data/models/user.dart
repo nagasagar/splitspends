@@ -19,15 +19,25 @@ class User extends Equatable {
     required this.emailVerified,
     required this.preferredCurrency,
   });
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+
+  factory User.fromJson(Map<String, dynamic> json) => User(
+        id: (json['id'] as num).toInt(),
+        name: json['name'] as String? ?? '',
+        email: json['email'] as String? ?? '',
+        profilePictureUrl: json['profilePictureUrl'] as String?,
+        emailVerified: (json['emailVerified'] as bool?) ?? false,
+        preferredCurrency: json['preferredCurrency'] as String? ?? '',
+      );
+
   Map<String, dynamic> toJson() => _$UserToJson(this);
+
   @override
   List<Object?> get props => [
-    id,
-    name,
-    email,
-    profilePictureUrl,
-    emailVerified,
-    preferredCurrency,
-  ];
+        id,
+        name,
+        email,
+        profilePictureUrl,
+        emailVerified,
+        preferredCurrency,
+      ];
 }

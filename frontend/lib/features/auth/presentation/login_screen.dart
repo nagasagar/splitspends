@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
 import '../provider/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -31,7 +33,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
     if (result.success) {
       // Navigate to dashboard or home
-      if (mounted) Navigator.pushReplacementNamed(context, '/dashboard');
+      if (mounted) context.go('/dashboard');
     }
   }
 
@@ -81,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
-                  icon: Image.asset('assets/google_logo.png', height: 20),
+                  icon: Image.asset('assets/images/google_logo.png', height: 20),
                   label: const Text('Sign in with Google'),
                   onPressed: _isLoading
                       ? null
@@ -89,7 +91,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/signup'),
+                  onPressed: () {
+                    print('Sign up pressed'); // <-- Add this
+                    context.go('/signup');
+                  },
                   child: const Text('Don\'t have an account? Sign up'),
                 ),
               ],

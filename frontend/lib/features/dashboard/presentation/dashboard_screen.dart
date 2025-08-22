@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -13,7 +14,8 @@ class DashboardScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () {
               // TODO: Implement logout logic
-              Navigator.pushReplacementNamed(context, '/login');
+              // Use GoRouter for navigation
+              context.go('/login');
             },
           ),
         ],

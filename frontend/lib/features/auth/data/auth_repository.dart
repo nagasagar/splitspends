@@ -2,30 +2,131 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:splitspends_flutter/features/auth/data/models/auth_response.dart';
+import 'package:splitspends_flutter/features/auth/data/models/user.dart';
 
+// Provider for the repository
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
 });
 
-class AuthRepository {refactor 
-  // Replace with your backend API base URL
-  static const String _baseUrl = 'http://localhost:8080/api/auth';
+class AuthRepository {
+  static const String _baseUrl = 'http://localhost:8080/api/auth'; // Adjust as needed
 
-  Future<String?> login(String email, String password) async {
+  // LOGIN: Regular email/password
+  Future<AuthResponse> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'password': password}),
     );
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      // Assuming the backend returns a JSON with a 'token' field
-      return data['token'] as String?;
+      return AuthResponse.fromJson(data);
+    } else {
+      final error = response.body.isNotEmpty ? jsonDecode(response.body)['error'] ?? 'Login failed' : 'Login failed';
+      return AuthResponse(
+        token: '',
+        email: '',
+        refreshToken: null,
+        user: null,
+        error: error, //<-- Add this if you define an error field in model
+      );
+    }
+  }
+
+  // LOGIN: Google SSO
+  Future<AuthResponse> loginWithGoogle(String idToken) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/google'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'idToken': idToken}),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return AuthResponse.fromJson(data);
+    } else {
+      final error = response.body.isNotEmpty
+          ? jsonDecode(response.body)['error'] ?? 'Google Sign-In failed'
+          : 'Google Sign-In failed';
+      return AuthResponse(
+        token: '',
+        email: '',
+        refreshToken: null,
+        user: null,
+        error: error, //<-- Add this if you define an error field in model
+      );
+    }
+  }
+
+  // SIGNUP
+  Future<AuthResponse> signup(String name, String email, String password) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/signup'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'name': name, 'email': email, 'password': password}),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return AuthResponse.fromJson(data);
+    } else {
+      final error = response.body.isNotEmpty ? jsonDecode(response.body)['error'] ?? 'Signup failed' : 'Signup failed';
+      return AuthResponse(
+        token: '',
+        email: '',
+        refreshToken: null,
+        user: null,
+        error: error, //<-- Add this if you define an error field in model
+      );
+    }
+  }
+
+  // Get current user info using token (expects Authorization: Bearer ...)
+  Future<User?> getCurrentUser(String token) async {
+    final userId = getUserIdFromToken(token);
+    if (userId == null) return null;
+
+    final user = await getUserByEmail(userId, token);
+    if (user != null) {
+      return user;
     } else {
       return null;
     }
   }
 
-  // Add signup, logout, and Google SSO methods as needed
+  /// Example: decode JWT, extract "sub" or a custom claim for userId/email as String
+  String? getUserIdFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final payloadMap = jsonDecode(payload);
+      // Return sub as String (email)
+      return payloadMap['sub']?.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<User?> getUserByEmail(String email, String token) async {
+    // Encode email for URL safety
+    final encodedEmail = Uri.encodeComponent(email);
+    final url = 'http://localhost:8080/api/users/email/$encodedEmail';
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return User.fromJson(data);
+    } else {
+      // Optionally: handle 404 (user not found) separately
+      return null;
+    }
+  }
+
 }

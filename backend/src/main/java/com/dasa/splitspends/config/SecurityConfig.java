@@ -1,3 +1,4 @@
+
 package com.dasa.splitspends.config;
 
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.dasa.splitspends.entity.User;
 import com.dasa.splitspends.repository.UserRepository;
@@ -20,7 +23,15 @@ import com.dasa.splitspends.repository.UserRepository;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider,
+            UserDetailsService userDetailsService) {
+        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter,
+            AuthenticationEntryPoint restAuthenticationEntryPoint)
+            throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
@@ -33,10 +44,9 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**")
                         .permitAll()
-                        .requestMatchers("/api/test").authenticated() // Require auth for test endpoint
-                        .anyRequest().authenticated() // Protect all endpoints
-                )
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for development
+                        .requestMatchers("/api/test").authenticated()
+                        .anyRequest().authenticated())
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
                     corsConfig.setAllowedOriginPatterns(java.util.List.of("*"));
@@ -45,8 +55,9 @@ public class SecurityConfig {
                     corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 }))
-                .httpBasic(httpBasic -> {
-                }); // Enable basic auth
+                .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(restAuthenticationEntryPoint))
+                .exceptionHandling(eh -> eh.authenticationEntryPoint(restAuthenticationEntryPoint))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -73,5 +84,11 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
             throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint restAuthenticationEntryPoint(
+            LoggingAuthenticationEntryPoint loggingAuthenticationEntryPoint) {
+        return loggingAuthenticationEntryPoint;
     }
 }
