@@ -7,7 +7,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
 });
 
-class AuthRepository {
+class AuthRepository {refactor 
   // Replace with your backend API base URL
   static const String _baseUrl = 'http://localhost:8080/api/auth';
 
