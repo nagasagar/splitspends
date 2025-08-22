@@ -27,6 +27,8 @@ public class SecurityConfig {
                                 "/api/auth/signup",
                                 "/api/auth/login",
                                 "/api/auth/google",
+                                "/api/auth/verify-email",
+                                "/api/auth/resend-verification",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**")

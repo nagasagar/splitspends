@@ -91,6 +91,9 @@ public class User {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
+    @Column(name = "email_verification_sent_at")
+    private LocalDateTime emailVerificationSentAt;
+
     // ========== USER PREFERENCES ==========
 
     @Pattern(regexp = "^[A-Z]{3}$", message = "Currency must be a 3-letter ISO code")

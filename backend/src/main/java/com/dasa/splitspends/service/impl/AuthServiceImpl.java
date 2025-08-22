@@ -14,23 +14,30 @@ import com.dasa.splitspends.entity.User;
 import com.dasa.splitspends.repository.UserRepository;
 import com.dasa.splitspends.security.JwtUtil;
 import com.dasa.splitspends.service.AuthService;
+import com.dasa.splitspends.service.EmailVerificationService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final EmailVerificationService emailVerificationService;
 
     public AuthServiceImpl(UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil,
-            AuthenticationManager authenticationManager) {
+            AuthenticationManager authenticationManager,
+            EmailVerificationService emailVerificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @Override
@@ -42,7 +49,15 @@ public class AuthServiceImpl implements AuthService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(user);
+        user.setEmailVerified(false); // Important: set to false
+        user = userRepository.save(user);
+        // Send verification email
+        try {
+            emailVerificationService.sendVerificationEmail(user);
+        } catch (Exception e) {
+            // Log error but don't fail registration
+            log.warn("Failed to send verification email to {}: {}", user.getEmail(), e.getMessage());
+        }
         String token = jwtUtil.generateToken(user.getEmail());
         return new AuthResponse(token, null, user.getEmail());
     }

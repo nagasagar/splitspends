@@ -14,6 +14,30 @@
             "name": "app.cors.allowed-origins",
             "type": "java.lang.String",
             "description": "A description for 'app.cors.allowed-origins'"
+        },
+        {
+            "name": "app.base-url",
+            "type": "java.lang.String",
+            "description": "Base URL of the backend application, used in email templates and links.",
+            "defaultValue": "http://localhost:8080"
+        },
+        {
+            "name": "app.frontend-url",
+            "type": "java.lang.String",
+            "description": "Base URL of the frontend application, used in email templates and links.",
+            "defaultValue": "http://localhost:3000"
+        },
+        {
+            "name": "app.verification-token-expiry",
+            "type": "java.lang.Long",
+            "description": "Verification token expiry time in milliseconds.",
+            "defaultValue": 86400000
+        },
+        {
+            "name": "app.upload.dir",
+            "type": "java.lang.String",
+            "description": "Directory path for storing uploaded files. Used by AttachmentServiceImpl for saving user-uploaded attachments. Default is 'uploads' in the project root.",
+            "defaultValue": "uploads"
         }
     ]
 }

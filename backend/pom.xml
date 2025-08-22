@@ -96,6 +96,18 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Email verification -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
+		<!-- For email templates -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
 		<!-- Testing & Validation -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -111,7 +123,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
-
 	</dependencies>
 
 	<build>
