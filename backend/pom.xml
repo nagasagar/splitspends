@@ -189,6 +189,29 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Pretty-print OpenAPI JSON using a minimal Java class and exec-maven-plugin -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>format-openapi-json</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.dasa.splitspends.util.JsonPrettyPrint</mainClass>
+							<arguments>
+								<argument>${project.basedir}/docs/openapi.json</argument>
+								<argument>${project.basedir}/docs/openapi-pretty.json</argument>
+							</arguments>
+							<classpathScope>compile</classpathScope>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- Copy OpenAPI spec to root docs folder for centralized access -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -204,7 +227,7 @@
 						<configuration>
 							<skip>${skipOpenApiGeneration}</skip>
 							<target>
-								<copy file="${project.basedir}/docs/openapi.json"
+								<copy file="${project.basedir}/docs/openapi-pretty.json"
 									tofile="${project.basedir}/../docs/openapi.json"
 									failonerror="false" />
 							</target>
