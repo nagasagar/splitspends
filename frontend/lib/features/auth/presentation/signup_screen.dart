@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../provider/auth_provider.dart';
 
@@ -35,11 +36,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       _passwordCtrl.text,
     );
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (success) {
-      // You can use context.go('/dashboard') if using go_router
-      Navigator.of(context).pushReplacementNamed('/dashboard');
+      context.go('/dashboard');
     } else {
       final error = ref.read(authProvider).error ?? "Signup failed";
       ScaffoldMessenger.of(context).showSnackBar(

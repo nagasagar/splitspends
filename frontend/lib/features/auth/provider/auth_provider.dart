@@ -124,8 +124,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.unauthenticated();
   }
 
-  Future<void> loginWithGoogle(BuildContext context) async {
-    // TODO: Implement Google SSO logic
+  Future<bool> loginWithGoogle(String idToken) async {
+    try {
+      final resp = await _authRepository.loginWithGoogle(idToken);
+      if (resp.token.isNotEmpty) {
+        await AuthTokenStorage.saveToken(resp.token);
+        final user = await _authRepository.getCurrentUser(resp.token);
+        if (user != null) {
+          state = AuthState.authenticated(token: resp.token, user: user);
+          return true;
+        } else {
+          state = AuthState.unauthenticated().copyWith(error: "Failed to fetch user info.");
+          return false;
+        }
+      }
+      state = AuthState.unauthenticated().copyWith(error: resp.error ?? 'Google login failed');
+      return false;
+    } catch (e) {
+      state = AuthState.unauthenticated().copyWith(error: e.toString());
+      return false;
+    }
+  }
+
+  Future<void> loginWithGoogleUI(BuildContext context) async {
+    // TODO: Implement Google SSO logic with UI
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Google SSO not implemented yet')),
     );

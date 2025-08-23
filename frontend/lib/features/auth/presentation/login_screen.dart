@@ -87,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   label: const Text('Sign in with Google'),
                   onPressed: _isLoading
                       ? null
-                      : () => ref.read(authProvider.notifier).loginWithGoogle(context),
+                      : () => ref.read(authProvider.notifier).loginWithGoogleUI(context),
                 ),
                 const SizedBox(height: 16),
                 TextButton(

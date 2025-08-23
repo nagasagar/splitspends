@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/signup_screen.dart';
-import '../features/dashboard/presentation/dashboard_screen.dart';
 // Import your auth and screens
-import '../shared/providers/auth_provider.dart';
+import '../features/auth/provider/auth_provider.dart';
+import '../features/dashboard/presentation/dashboard_screen.dart';
 
 // Derived provider that returns true if fully authenticated
 final isAuthenticatedProvider = Provider<bool>((ref) {
@@ -41,13 +41,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Add more routes/screens as you build more features!
     ],
     redirect: (BuildContext context, GoRouterState state) {
-      // Not authenticated? Always route to login
+      // Not authenticated? Allow access to login and signup pages
       final loggingIn = state.matchedLocation == '/login';
-      if (!isAuthenticated && !loggingIn) {
+      final signingUp = state.matchedLocation == '/signup';
+      if (!isAuthenticated && !loggingIn && !signingUp) {
         return '/login';
       }
-      // Authenticated and trying to go to login? Go to dashboard instead
-      if (isAuthenticated && loggingIn) {
+      // Authenticated and trying to go to login or signup? Go to dashboard instead
+      if (isAuthenticated && (loggingIn || signingUp)) {
         return '/dashboard';
       }
       return null;

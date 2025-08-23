@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DashboardScreen extends StatelessWidget {
+import '../../auth/provider/auth_provider.dart';
+
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              // TODO: Implement logout logic
-              // Use GoRouter for navigation
-              context.go('/login');
+            onPressed: () async {
+              // Properly logout by calling the auth provider's logout method
+              await ref.read(authProvider.notifier).logout();
+              // Navigation will be handled automatically by the router redirect logic
             },
           ),
         ],

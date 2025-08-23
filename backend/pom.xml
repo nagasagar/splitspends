@@ -29,6 +29,7 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<skipOpenApiGeneration>false</skipOpenApiGeneration>
 	</properties>
 	<dependencies>
 		<!-- OpenAPI  for Spring Boot -->
@@ -123,6 +124,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -130,6 +136,81 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<!-- Start the application before generating OpenAPI docs -->
+					<execution>
+						<id>pre-integration-test</id>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<phase>pre-integration-test</phase>
+						<configuration>
+							<skip>${skipOpenApiGeneration}</skip>
+							<maxAttempts>120</maxAttempts>
+							<wait>1000</wait>
+							<jmxPort>9001</jmxPort>
+							<arguments>
+								<argument>--spring.profiles.active=test</argument>
+								<argument>--server.port=8080</argument>
+								<argument>--spring.jmx.enabled=true</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<!-- Stop the application after generating OpenAPI docs -->
+					<execution>
+						<id>post-integration-test</id>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+						<phase>post-integration-test</phase>
+						<configuration>
+							<skip>${skipOpenApiGeneration}</skip>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-maven-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>generate-openapi-doc</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>integration-test</phase>
+						<configuration>
+							<outputFileName>openapi.json</outputFileName>
+							<outputDir>${project.basedir}/docs</outputDir>
+							<apiDocsUrl>http://localhost:8080/v3/api-docs</apiDocsUrl>
+							<skip>${skipOpenApiGeneration}</skip>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Copy OpenAPI spec to root docs folder for centralized access -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>copy-openapi-to-root-docs</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<skip>${skipOpenApiGeneration}</skip>
+							<target>
+								<copy file="${project.basedir}/docs/openapi.json"
+									tofile="${project.basedir}/../docs/openapi.json"
+									failonerror="false" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
