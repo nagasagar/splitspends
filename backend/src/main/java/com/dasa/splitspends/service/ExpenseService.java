@@ -15,104 +15,133 @@ import com.dasa.splitspends.entity.User;
 
 public interface ExpenseService {
 
-    /**
-     * Get expense statistics for a specific user.
-     *
-     * @param userId the user ID
-     * @return ExpenseStats for the user
-     */
-    ExpenseStats getExpenseStatsForUser(Long userId);
+        /**
+         * Get expense statistics for a specific user.
+         *
+         * @param userId the user ID
+         * @return ExpenseStats for the user
+         */
+        ExpenseStats getExpenseStatsForUser(Long userId);
 
-    /**
-     * Create a new expense with equal splits among participants.
-     * 
-     * @param groupId            the group ID
-     * @param paidByUserId       the user who paid
-     * @param description        expense description
-     * @param amount             total expense amount
-     * @param participantUserIds list of participant user IDs
-     * @param category           expense category
-     * @return the created Expense
-     */
-    Expense createExpenseWithEqualSplits(Long groupId, Long paidByUserId, String description, BigDecimal amount,
-            List<Long> participantUserIds, Expense.ExpenseCategory category);
+        /**
+         * Create a new expense with equal splits among participants.
+         * 
+         * @param groupId            the group ID
+         * @param paidByUserId       the user who paid
+         * @param description        expense description
+         * @param amount             total expense amount
+         * @param participantUserIds list of participant user IDs
+         * @param category           expense category
+         * @return the created Expense
+         */
+        Expense createExpenseWithEqualSplits(Long groupId, Long paidByUserId, String description, BigDecimal amount,
+                        List<Long> participantUserIds, Expense.ExpenseCategory category);
 
-    /**
-     * Create a new expense with custom split amounts for each participant.
-     * 
-     * @param groupId       the group ID
-     * @param paidByUserId  the user who paid
-     * @param description   expense description
-     * @param amount        total expense amount
-     * @param userAmountMap map of user ID to split amount
-     * @param category      expense category
-     * @return the created Expense
-     */
-    Expense createExpenseWithCustomSplits(Long groupId, Long paidByUserId, String description, BigDecimal amount,
-            Map<Long, BigDecimal> userAmountMap, Expense.ExpenseCategory category);
+        /**
+         * Create a new expense with custom split amounts for each participant.
+         * 
+         * @param groupId       the group ID
+         * @param paidByUserId  the user who paid
+         * @param description   expense description
+         * @param amount        total expense amount
+         * @param userAmountMap map of user ID to split amount
+         * @param category      expense category
+         * @return the created Expense
+         */
+        Expense createExpenseWithCustomSplits(Long groupId, Long paidByUserId, String description, BigDecimal amount,
+                        Map<Long, BigDecimal> userAmountMap, Expense.ExpenseCategory category);
 
-    /**
-     * Update an existing expense.
-     * 
-     * @param expenseId   the expense ID
-     * @param description new description
-     * @param amount      new amount
-     * @param category    new category
-     * @param notes       update notes
-     * @param updatedBy   the user making the update
-     * @return the updated Expense
-     */
-    Expense updateExpense(Long expenseId, String description, BigDecimal amount, Expense.ExpenseCategory category,
-            String notes, User updatedBy);
+        /**
+         * Create a new expense with percentage splits for each participant.
+         *
+         * @param groupId           the group ID
+         * @param paidByUserId      the user who paid
+         * @param description       expense description
+         * @param amount            total expense amount
+         * @param userPercentageMap map of user ID to percentage (should sum to 100)
+         * @param category          expense category
+         * @return the created Expense
+         */
+        Expense createExpenseWithPercentageSplits(Long groupId, Long paidByUserId, String description,
+                        BigDecimal amount,
+                        Map<Long, BigDecimal> userPercentageMap, Expense.ExpenseCategory category);
 
-    /**
-     * Delete an expense (soft delete).
-     * 
-     * @param expenseId the expense ID
-     * @param deletedBy the user performing the delete
-     */
-    void deleteExpense(Long expenseId, User deletedBy);
+        /**
+         * Create a new expense with share-based splits for each participant.
+         *
+         * @param groupId      the group ID
+         * @param paidByUserId the user who paid
+         * @param description  expense description
+         * @param amount       total expense amount
+         * @param userShareMap map of user ID to number of shares (weights)
+         * @param category     expense category
+         * @return the created Expense
+         */
+        Expense createExpenseWithShareSplits(Long groupId, Long paidByUserId, String description, BigDecimal amount,
+                        Map<Long, Integer> userShareMap, Expense.ExpenseCategory category);
 
-    /**
-     * Get paginated expenses for a group.
-     * 
-     * @param groupId  the group ID
-     * @param pageable pagination info
-     * @return page of expenses
-     */
-    Page<Expense> getGroupExpenses(Long groupId, Pageable pageable);
+        /**
+         * Update an existing expense.
+         * 
+         * @param expenseId   the expense ID
+         * @param description new description
+         * @param amount      new amount
+         * @param category    new category
+         * @param notes       update notes
+         * @param updatedBy   the user making the update
+         * @return the updated Expense
+         */
+        Expense updateExpense(Long expenseId, String description, BigDecimal amount, Expense.ExpenseCategory category,
+                        String notes, User updatedBy);
 
-    /**
-     * Get all expenses involving a specific user.
-     * 
-     * @param userId the user ID
-     * @return list of expenses
-     */
-    List<Expense> getUserExpenses(Long userId);
+        /**
+         * Delete an expense (soft delete).
+         * 
+         * @param expenseId the expense ID
+         * @param deletedBy the user performing the delete
+         */
+        void deleteExpense(Long expenseId, User deletedBy);
 
-    /**
-     * Get recent expenses for a group (for activity feed).
-     * 
-     * @param groupId the group ID
-     * @param limit   max number of expenses
-     * @return list of recent expenses
-     */
-    List<Expense> getRecentExpenses(Long groupId, int limit);
+        /**
+         * Get paginated expenses for a group.
+         * 
+         * @param groupId  the group ID
+         * @param pageable pagination info
+         * @return page of expenses
+         */
+        Page<Expense> getGroupExpenses(Long groupId, Pageable pageable);
 
-    /**
-     * Add a receipt attachment to an expense.
-     * 
-     * @param expenseId the expense ID
-     * @param file      the attachment file
-     * @return the updated Expense
-     */
-    Expense addAttachment(Long expenseId, MultipartFile file);
+        /**
+         * Get all expenses involving a specific user.
+         * 
+         * @param userId the user ID
+         * @return list of expenses
+         */
+        List<Expense> getUserExpenses(Long userId);
 
-    /**
-     * Get statistics for a group (total, settled, average, etc.).
-     * 
-     * @param groupId the group ID
-     * @return ExpenseStats for the group
-     */
-    ExpenseStats getGroupExpenseStats(Long groupId);
+        /**
+         * Get recent expenses for a group (for activity feed).
+         * 
+         * @param groupId the group ID
+         * @param limit   max number of expenses
+         * @return list of recent expenses
+         */
+        List<Expense> getRecentExpenses(Long groupId, int limit);
+
+        /**
+         * Add a receipt attachment to an expense.
+         * 
+         * @param expenseId the expense ID
+         * @param file      the attachment file
+         * @return the updated Expense
+         */
+        Expense addAttachment(Long expenseId, MultipartFile file);
+
+        /**
+         * Get statistics for a group (total, settled, average, etc.).
+         * 
+         * @param groupId the group ID
+         * @return ExpenseStats for the group
+         */
+        ExpenseStats getGroupExpenseStats(Long groupId);
 }

@@ -60,7 +60,7 @@ public class ExpenseController {
         return ResponseEntity.ok(expense);
     }
 
-    // Create expense with custom splits
+    // Create expense with custom splits (amounts)
     @PostMapping("/group/{groupId}/custom-split")
     public ResponseEntity<Expense> createExpenseWithCustomSplits(
             @PathVariable Long groupId,
@@ -71,6 +71,36 @@ public class ExpenseController {
             @RequestParam Expense.ExpenseCategory category) {
         Expense expense = expenseService.createExpenseWithCustomSplits(groupId, paidByUserId, description, amount,
                 userAmountMap, category);
+        return ResponseEntity.ok(expense);
+    }
+
+    // Create expense with percentage splits
+    @PostMapping("/group/{groupId}/percentage-split")
+    public ResponseEntity<Expense> createExpenseWithPercentageSplits(
+            @PathVariable Long groupId,
+            @RequestParam Long paidByUserId,
+            @RequestParam String description,
+            @RequestParam BigDecimal amount,
+            @RequestBody Map<Long, BigDecimal> userPercentageMap,
+            @RequestParam Expense.ExpenseCategory category) {
+        // userPercentageMap: userId -> percentage (should sum to 100)
+        Expense expense = expenseService.createExpenseWithPercentageSplits(groupId, paidByUserId, description, amount,
+                userPercentageMap, category);
+        return ResponseEntity.ok(expense);
+    }
+
+    // Create expense with share-based splits
+    @PostMapping("/group/{groupId}/share-split")
+    public ResponseEntity<Expense> createExpenseWithShareSplits(
+            @PathVariable Long groupId,
+            @RequestParam Long paidByUserId,
+            @RequestParam String description,
+            @RequestParam BigDecimal amount,
+            @RequestBody Map<Long, Integer> userShareMap,
+            @RequestParam Expense.ExpenseCategory category) {
+        // userShareMap: userId -> number of shares (weights)
+        Expense expense = expenseService.createExpenseWithShareSplits(groupId, paidByUserId, description, amount,
+                userShareMap, category);
         return ResponseEntity.ok(expense);
     }
 
