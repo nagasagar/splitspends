@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dasa.splitspends.dto.AuthRequest;
-import com.dasa.splitspends.dto.AuthResponse;
-import com.dasa.splitspends.dto.GoogleAuthRequest;
+import com.dasa.splitspends.dto.auth.AuthRequest;
+import com.dasa.splitspends.dto.auth.AuthResponse;
+import com.dasa.splitspends.dto.auth.GoogleAuthRequest;
 import com.dasa.splitspends.service.AuthService;
 
 import jakarta.validation.Valid;

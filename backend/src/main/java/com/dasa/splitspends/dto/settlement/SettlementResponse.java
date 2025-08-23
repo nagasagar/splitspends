@@ -1,8 +1,10 @@
-package com.dasa.splitspends.dto;
+package com.dasa.splitspends.dto.settlement;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.dasa.splitspends.dto.UserResponse;
+import com.dasa.splitspends.dto.group.GroupResponse;
 import com.dasa.splitspends.entity.SettleUp;
 
 import lombok.Builder;

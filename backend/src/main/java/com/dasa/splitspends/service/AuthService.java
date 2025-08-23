@@ -1,8 +1,8 @@
 package com.dasa.splitspends.service;
 
-import com.dasa.splitspends.dto.AuthRequest;
-import com.dasa.splitspends.dto.AuthResponse;
-import com.dasa.splitspends.dto.GoogleAuthRequest;
+import com.dasa.splitspends.dto.auth.AuthRequest;
+import com.dasa.splitspends.dto.auth.AuthResponse;
+import com.dasa.splitspends.dto.auth.GoogleAuthRequest;
 
 public interface AuthService {
 

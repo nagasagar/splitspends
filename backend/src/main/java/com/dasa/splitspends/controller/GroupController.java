@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dasa.splitspends.dto.GroupRequest;
-import com.dasa.splitspends.dto.GroupResponse;
-import com.dasa.splitspends.dto.GroupSettingsRequest;
 import com.dasa.splitspends.dto.UserResponse;
+import com.dasa.splitspends.dto.group.GroupRequest;
+import com.dasa.splitspends.dto.group.GroupResponse;
+import com.dasa.splitspends.dto.group.GroupSettingsRequest;
 import com.dasa.splitspends.entity.Group;
 import com.dasa.splitspends.entity.User;
 import com.dasa.splitspends.service.GroupService;

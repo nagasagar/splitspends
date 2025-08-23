@@ -1,4 +1,4 @@
-package com.dasa.splitspends.dto;
+package com.dasa.splitspends.dto.auth;
 
 public class GoogleAuthRequest {
     private String idToken; // Google ID token

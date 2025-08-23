@@ -1,4 +1,4 @@
-package com.dasa.splitspends.dto;
+package com.dasa.splitspends.dto.auth;
 
 public class AuthResponse {
     private String token;

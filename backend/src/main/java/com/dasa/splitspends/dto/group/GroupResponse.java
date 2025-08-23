@@ -1,9 +1,10 @@
-package com.dasa.splitspends.dto;
+package com.dasa.splitspends.dto.group;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.dasa.splitspends.dto.UserResponse;
 import com.dasa.splitspends.entity.Group;
 
 import lombok.Builder;
@@ -26,18 +27,16 @@ public class GroupResponse {
     private Set<UserResponse> members;
     private Set<UserResponse> admins;
     private String groupImageUrl;
-    
+
     public static GroupResponse fromEntity(Group group) {
-        Set<UserResponse> members = group.getMembers() != null ? 
-            group.getMembers().stream()
+        Set<UserResponse> members = group.getMembers() != null ? group.getMembers().stream()
                 .map(UserResponse::fromEntity)
                 .collect(Collectors.toSet()) : null;
-                
-        Set<UserResponse> admins = group.getAdmins() != null ?
-            group.getAdmins().stream()
+
+        Set<UserResponse> admins = group.getAdmins() != null ? group.getAdmins().stream()
                 .map(UserResponse::fromEntity)
                 .collect(Collectors.toSet()) : null;
-        
+
         return GroupResponse.builder()
                 .id(group.getId())
                 .name(group.getName())

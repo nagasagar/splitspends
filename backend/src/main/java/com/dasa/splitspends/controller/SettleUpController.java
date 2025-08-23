@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dasa.splitspends.dto.SettlementConfirmRequest;
-import com.dasa.splitspends.dto.SettlementRejectRequest;
-import com.dasa.splitspends.dto.SettlementRequest;
-import com.dasa.splitspends.dto.SettlementResponse;
+import com.dasa.splitspends.dto.settlement.SettlementConfirmRequest;
+import com.dasa.splitspends.dto.settlement.SettlementRejectRequest;
+import com.dasa.splitspends.dto.settlement.SettlementRequest;
+import com.dasa.splitspends.dto.settlement.SettlementResponse;
 import com.dasa.splitspends.entity.SettleUp;
 import com.dasa.splitspends.service.SettleUpService;
 
@@ -35,13 +35,12 @@ public class SettleUpController {
     @PostMapping
     public ResponseEntity<SettlementResponse> createSettlement(@Valid @RequestBody SettlementRequest request) {
         SettleUp settlement = settleUpService.createSettlement(
-            request.getGroupId(),
-            request.getPayerId(),
-            request.getPayeeId(),
-            request.getAmount(),
-            request.getDescription(),
-            request.getPaymentMethod()
-        );
+                request.getGroupId(),
+                request.getPayerId(),
+                request.getPayeeId(),
+                request.getAmount(),
+                request.getDescription(),
+                request.getPaymentMethod());
         return ResponseEntity.ok(SettlementResponse.fromEntity(settlement));
     }
 
@@ -56,10 +55,9 @@ public class SettleUpController {
             @PathVariable Long settlementId,
             @Valid @RequestBody SettlementConfirmRequest request) {
         SettleUp settlement = settleUpService.confirmSettlement(
-            settlementId, 
-            request.getConfirmingUserId(),
-            request.getTransactionId()
-        );
+                settlementId,
+                request.getConfirmingUserId(),
+                request.getTransactionId());
         return ResponseEntity.ok(SettlementResponse.fromEntity(settlement));
     }
 
@@ -68,10 +66,9 @@ public class SettleUpController {
             @PathVariable Long settlementId,
             @Valid @RequestBody SettlementRejectRequest request) {
         SettleUp settlement = settleUpService.rejectSettlement(
-            settlementId,
-            request.getRejectingUserId(),
-            request.getReason()
-        );
+                settlementId,
+                request.getRejectingUserId(),
+                request.getReason());
         return ResponseEntity.ok(SettlementResponse.fromEntity(settlement));
     }
 

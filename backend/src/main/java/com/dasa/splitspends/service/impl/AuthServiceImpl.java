@@ -7,9 +7,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.dasa.splitspends.dto.AuthRequest;
-import com.dasa.splitspends.dto.AuthResponse;
-import com.dasa.splitspends.dto.GoogleAuthRequest;
+import com.dasa.splitspends.dto.auth.AuthRequest;
+import com.dasa.splitspends.dto.auth.AuthResponse;
+import com.dasa.splitspends.dto.auth.GoogleAuthRequest;
 import com.dasa.splitspends.entity.User;
 import com.dasa.splitspends.repository.UserRepository;
 import com.dasa.splitspends.security.JwtUtil;

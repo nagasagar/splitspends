@@ -2,6 +2,7 @@ package com.dasa.splitspends.dto;
 
 import java.time.LocalDateTime;
 
+import com.dasa.splitspends.dto.group.GroupResponse;
 import com.dasa.splitspends.entity.Invitation;
 
 import lombok.Builder;

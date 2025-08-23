@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dasa.splitspends.dto.ExpenseStats;
+import com.dasa.splitspends.dto.expense.ExpenseStats;
 import com.dasa.splitspends.entity.Expense;
 import com.dasa.splitspends.entity.User;
 

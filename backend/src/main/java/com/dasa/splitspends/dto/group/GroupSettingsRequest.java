@@ -1,4 +1,4 @@
-package com.dasa.splitspends.dto;
+package com.dasa.splitspends.dto.group;
 
 import java.math.BigDecimal;
 
@@ -9,13 +9,13 @@ import lombok.Data;
 
 @Data
 public class GroupSettingsRequest {
-    
+
     @NotNull(message = "Updated by user ID is required")
     private Long updatedByUserId;
-    
+
     private Group.InvitationPolicy invitationPolicy;
-    
+
     private BigDecimal autoSettleThreshold;
-    
+
     private Boolean allowExternalPayments;
 }

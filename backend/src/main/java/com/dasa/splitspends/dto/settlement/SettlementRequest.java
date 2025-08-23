@@ -1,4 +1,4 @@
-package com.dasa.splitspends.dto;
+package com.dasa.splitspends.dto.settlement;
 
 import java.math.BigDecimal;
 

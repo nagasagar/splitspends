@@ -2,7 +2,6 @@ package com.dasa.splitspends.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dasa.splitspends.dto.ExpenseStats;
+import com.dasa.splitspends.dto.expense.ExpenseStats;
 import com.dasa.splitspends.entity.Expense;
 import com.dasa.splitspends.service.ExpenseService;
 
@@ -50,13 +49,14 @@ public class ExpenseController {
     @PostMapping("/group/{groupId}/equal-split")
     public ResponseEntity<Expense> createExpenseWithEqualSplits(
             @PathVariable Long groupId,
-            @RequestParam Long paidByUserId,
-            @RequestParam String description,
-            @RequestParam BigDecimal amount,
-            @RequestParam List<Long> participantUserIds,
-            @RequestParam Expense.ExpenseCategory category) {
-        Expense expense = expenseService.createExpenseWithEqualSplits(groupId, paidByUserId, description, amount,
-                participantUserIds, category);
+            @RequestBody com.dasa.splitspends.dto.expense.CreateExpenseRequest request) {
+        Expense expense = expenseService.createExpenseWithEqualSplits(
+                groupId,
+                request.getPaidByUserId(),
+                request.getDescription(),
+                request.getAmount(),
+                request.getParticipantUserIds(),
+                com.dasa.splitspends.entity.Expense.ExpenseCategory.valueOf(request.getCategory()));
         return ResponseEntity.ok(expense);
     }
 
@@ -64,13 +64,14 @@ public class ExpenseController {
     @PostMapping("/group/{groupId}/custom-split")
     public ResponseEntity<Expense> createExpenseWithCustomSplits(
             @PathVariable Long groupId,
-            @RequestParam Long paidByUserId,
-            @RequestParam String description,
-            @RequestParam BigDecimal amount,
-            @RequestBody Map<Long, BigDecimal> userAmountMap,
-            @RequestParam Expense.ExpenseCategory category) {
-        Expense expense = expenseService.createExpenseWithCustomSplits(groupId, paidByUserId, description, amount,
-                userAmountMap, category);
+            @RequestBody com.dasa.splitspends.dto.expense.CustomSplitRequest request) {
+        Expense expense = expenseService.createExpenseWithCustomSplits(
+                groupId,
+                request.getPaidByUserId(),
+                request.getDescription(),
+                request.getAmount(),
+                request.getUserAmountMap(),
+                com.dasa.splitspends.entity.Expense.ExpenseCategory.valueOf(request.getCategory()));
         return ResponseEntity.ok(expense);
     }
 
@@ -78,14 +79,15 @@ public class ExpenseController {
     @PostMapping("/group/{groupId}/percentage-split")
     public ResponseEntity<Expense> createExpenseWithPercentageSplits(
             @PathVariable Long groupId,
-            @RequestParam Long paidByUserId,
-            @RequestParam String description,
-            @RequestParam BigDecimal amount,
-            @RequestBody Map<Long, BigDecimal> userPercentageMap,
-            @RequestParam Expense.ExpenseCategory category) {
+            @RequestBody com.dasa.splitspends.dto.expense.PercentageSplitRequest request) {
         // userPercentageMap: userId -> percentage (should sum to 100)
-        Expense expense = expenseService.createExpenseWithPercentageSplits(groupId, paidByUserId, description, amount,
-                userPercentageMap, category);
+        Expense expense = expenseService.createExpenseWithPercentageSplits(
+                groupId,
+                request.getPaidByUserId(),
+                request.getDescription(),
+                request.getAmount(),
+                request.getUserPercentageMap(),
+                com.dasa.splitspends.entity.Expense.ExpenseCategory.valueOf(request.getCategory()));
         return ResponseEntity.ok(expense);
     }
 
@@ -93,14 +95,15 @@ public class ExpenseController {
     @PostMapping("/group/{groupId}/share-split")
     public ResponseEntity<Expense> createExpenseWithShareSplits(
             @PathVariable Long groupId,
-            @RequestParam Long paidByUserId,
-            @RequestParam String description,
-            @RequestParam BigDecimal amount,
-            @RequestBody Map<Long, Integer> userShareMap,
-            @RequestParam Expense.ExpenseCategory category) {
+            @RequestBody com.dasa.splitspends.dto.expense.ShareSplitRequest request) {
         // userShareMap: userId -> number of shares (weights)
-        Expense expense = expenseService.createExpenseWithShareSplits(groupId, paidByUserId, description, amount,
-                userShareMap, category);
+        Expense expense = expenseService.createExpenseWithShareSplits(
+                groupId,
+                request.getPaidByUserId(),
+                request.getDescription(),
+                request.getAmount(),
+                request.getUserShareMap(),
+                com.dasa.splitspends.entity.Expense.ExpenseCategory.valueOf(request.getCategory()));
         return ResponseEntity.ok(expense);
     }
 

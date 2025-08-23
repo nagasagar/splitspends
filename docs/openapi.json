@@ -1060,46 +1060,12 @@
             "type" : "integer",
             "format" : "int64"
           }
-        }, {
-          "name" : "paidByUserId",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
-          "name" : "description",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "amount",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "number"
-          }
-        }, {
-          "name" : "category",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "enum" : [ "FOOD_DRINKS", "TRANSPORTATION", "ACCOMMODATION", "ENTERTAINMENT", "SHOPPING", "UTILITIES", "HEALTHCARE", "EDUCATION", "TRAVEL", "GROCERIES", "RESTAURANTS", "GAS", "PARKING", "OTHER" ]
-          }
         } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "integer",
-                  "format" : "int32"
-                }
+                "$ref" : "#/components/schemas/ShareSplitRequest"
               }
             }
           },
@@ -1131,45 +1097,12 @@
             "type" : "integer",
             "format" : "int64"
           }
-        }, {
-          "name" : "paidByUserId",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
-          "name" : "description",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "amount",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "number"
-          }
-        }, {
-          "name" : "category",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "enum" : [ "FOOD_DRINKS", "TRANSPORTATION", "ACCOMMODATION", "ENTERTAINMENT", "SHOPPING", "UTILITIES", "HEALTHCARE", "EDUCATION", "TRAVEL", "GROCERIES", "RESTAURANTS", "GAS", "PARKING", "OTHER" ]
-          }
         } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "number"
-                }
+                "$ref" : "#/components/schemas/PercentageSplitRequest"
               }
             }
           },
@@ -1201,48 +1134,17 @@
             "type" : "integer",
             "format" : "int64"
           }
-        }, {
-          "name" : "paidByUserId",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
-          "name" : "description",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "amount",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "number"
-          }
-        }, {
-          "name" : "participantUserIds",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "integer",
-              "format" : "int64"
-            }
-          }
-        }, {
-          "name" : "category",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "enum" : [ "FOOD_DRINKS", "TRANSPORTATION", "ACCOMMODATION", "ENTERTAINMENT", "SHOPPING", "UTILITIES", "HEALTHCARE", "EDUCATION", "TRAVEL", "GROCERIES", "RESTAURANTS", "GAS", "PARKING", "OTHER" ]
-          }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateExpenseRequest"
+              }
+            }
+          },
+          "required" : true
+        },
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -1269,45 +1171,12 @@
             "type" : "integer",
             "format" : "int64"
           }
-        }, {
-          "name" : "paidByUserId",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
-          "name" : "description",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "amount",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "number"
-          }
-        }, {
-          "name" : "category",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "enum" : [ "FOOD_DRINKS", "TRANSPORTATION", "ACCOMMODATION", "ENTERTAINMENT", "SHOPPING", "UTILITIES", "HEALTHCARE", "EDUCATION", "TRAVEL", "GROCERIES", "RESTAURANTS", "GAS", "PARKING", "OTHER" ]
-          }
         } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "number"
-                }
+                "$ref" : "#/components/schemas/CustomSplitRequest"
               }
             }
           },
@@ -3172,28 +3041,28 @@
           "storageProvider" : {
             "type" : "string"
           },
-          "image" : {
-            "type" : "boolean"
-          },
-          "pdf" : {
-            "type" : "boolean"
-          },
-          "allowedFileType" : {
-            "type" : "boolean"
-          },
-          "thumbnailUrl" : {
+          "displayName" : {
             "type" : "string"
           },
-          "deleted" : {
-            "type" : "boolean"
-          },
-          "displayName" : {
+          "fileExtension" : {
             "type" : "string"
           },
           "formattedFileSize" : {
             "type" : "string"
           },
-          "fileExtension" : {
+          "image" : {
+            "type" : "boolean"
+          },
+          "allowedFileType" : {
+            "type" : "boolean"
+          },
+          "pdf" : {
+            "type" : "boolean"
+          },
+          "deleted" : {
+            "type" : "boolean"
+          },
+          "thumbnailUrl" : {
             "type" : "string"
           }
         },
@@ -3247,19 +3116,15 @@
             "type" : "string",
             "format" : "date-time"
           },
-          "ageInDays" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "unsettledAmount" : {
-            "type" : "number"
-          },
-          "splitAmountValid" : {
-            "type" : "boolean"
-          },
           "participantCount" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "formattedAmount" : {
+            "type" : "string"
+          },
+          "fullySettled" : {
+            "type" : "boolean"
           },
           "activeAttachments" : {
             "type" : "array",
@@ -3271,11 +3136,15 @@
           "totalSplitAmount" : {
             "type" : "number"
           },
-          "formattedAmount" : {
-            "type" : "string"
-          },
-          "fullySettled" : {
+          "splitAmountValid" : {
             "type" : "boolean"
+          },
+          "ageInDays" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "unsettledAmount" : {
+            "type" : "number"
           }
         },
         "required" : [ "amount", "date", "description" ]
@@ -3396,6 +3265,104 @@
           "lastEmailSentAt" : {
             "type" : "string",
             "format" : "date-time"
+          }
+        }
+      },
+      "ShareSplitRequest" : {
+        "type" : "object",
+        "properties" : {
+          "paidByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "userShareMap" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "category" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PercentageSplitRequest" : {
+        "type" : "object",
+        "properties" : {
+          "paidByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "userPercentageMap" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "number"
+            }
+          },
+          "category" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CreateExpenseRequest" : {
+        "type" : "object",
+        "properties" : {
+          "paidByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "participantUserIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "category" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CustomSplitRequest" : {
+        "type" : "object",
+        "properties" : {
+          "paidByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "userAmountMap" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "number"
+            }
+          },
+          "category" : {
+            "type" : "string"
           }
         }
       },
@@ -3525,12 +3492,12 @@
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "numberOfElements" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "first" : {
             "type" : "boolean"
@@ -3553,14 +3520,14 @@
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
-          "pageNumber" : {
+          "pageSize" : {
             "type" : "integer",
             "format" : "int32"
           },
           "paged" : {
             "type" : "boolean"
           },
-          "pageSize" : {
+          "pageNumber" : {
             "type" : "integer",
             "format" : "int32"
           },
@@ -3678,15 +3645,15 @@
           "formattedDescription" : {
             "type" : "string"
           },
+          "ageInMinutes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "recent" : {
             "type" : "boolean"
           },
           "relativeTime" : {
             "type" : "string"
-          },
-          "ageInMinutes" : {
-            "type" : "integer",
-            "format" : "int64"
           }
         },
         "required" : [ "description" ]
@@ -3766,6 +3733,21 @@
             "type" : "string",
             "format" : "date-time"
           },
+          "active" : {
+            "type" : "boolean"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "googleUser" : {
+            "type" : "boolean"
+          },
+          "verified" : {
+            "type" : "boolean"
+          },
+          "username" : {
+            "type" : "string"
+          },
           "unreadNotificationsCount" : {
             "type" : "integer",
             "format" : "int64"
@@ -3780,21 +3762,6 @@
               "$ref" : "#/components/schemas/ActivityLog"
             },
             "uniqueItems" : true
-          },
-          "active" : {
-            "type" : "boolean"
-          },
-          "displayName" : {
-            "type" : "string"
-          },
-          "username" : {
-            "type" : "string"
-          },
-          "googleUser" : {
-            "type" : "boolean"
-          },
-          "verified" : {
-            "type" : "boolean"
           }
         },
         "required" : [ "email", "name" ]
@@ -3814,11 +3781,11 @@
           "netBalance" : {
             "type" : "number"
           },
-          "owedByGroup" : {
-            "type" : "boolean"
-          },
           "absoluteBalance" : {
             "type" : "number"
+          },
+          "owedByGroup" : {
+            "type" : "boolean"
           }
         }
       },

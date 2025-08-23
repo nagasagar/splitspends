@@ -1,4 +1,4 @@
-package com.dasa.splitspends.dto;
+package com.dasa.splitspends.dto.expense;
 
 import java.math.BigDecimal;
 
