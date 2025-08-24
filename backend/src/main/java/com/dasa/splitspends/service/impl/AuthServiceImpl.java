@@ -12,7 +12,7 @@ import com.dasa.splitspends.dto.auth.AuthResponse;
 import com.dasa.splitspends.dto.auth.GoogleAuthRequest;
 import com.dasa.splitspends.entity.User;
 import com.dasa.splitspends.repository.UserRepository;
-import com.dasa.splitspends.security.JwtUtil;
+import com.dasa.splitspends.security.JwtTokenProvider;
 import com.dasa.splitspends.service.AuthService;
 import com.dasa.splitspends.service.EmailVerificationService;
 
@@ -24,18 +24,18 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final EmailVerificationService emailVerificationService;
 
     public AuthServiceImpl(UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil,
+            JwtTokenProvider jwtTokenProvider,
             AuthenticationManager authenticationManager,
             EmailVerificationService emailVerificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
+        this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.emailVerificationService = emailVerificationService;
     }
@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
             // Log error but don't fail registration
             log.warn("Failed to send verification email to {}: {}", user.getEmail(), e.getMessage());
         }
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail());
         return new AuthResponse(token, null, user.getEmail());
     }
 
@@ -93,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
                     // set other fields as needed
                     return userRepository.save(newUser);
                 });
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail());
         return new AuthResponse(token, null, user.getEmail());
     }
 }

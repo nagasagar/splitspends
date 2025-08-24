@@ -1,4 +1,4 @@
-package com.dasa.splitspends.config;
+package com.dasa.splitspends.security;
 
 import java.security.Key;
 import java.util.Date;
@@ -13,7 +13,6 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtTokenProvider {
-
     @Value("${jwt.secret:SecretKeyToGenJWTs}")
     private String jwtSecret;
 
@@ -30,7 +29,7 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        return claims.get("email", String.class);
     }
 
     public boolean validateToken(String authToken) {
@@ -42,14 +41,39 @@ public class JwtTokenProvider {
         }
     }
 
-    public String generateToken(String email) {
+    public String generateToken(Long userId, String email) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(String.valueOf(userId))
+                .claim("email", email)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public Long getUserIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return Long.valueOf(claims.getSubject());
+    }
+
+    public Date extractExpiration(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getExpiration();
+    }
+
+    public <T> T extractClaim(String token, java.util.function.Function<Claims, T> claimsResolver) {
+        final Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token)
+                .getBody();
+        return claimsResolver.apply(claims);
     }
 }

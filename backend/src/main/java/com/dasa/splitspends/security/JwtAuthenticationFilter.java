@@ -1,4 +1,4 @@
-package com.dasa.splitspends.config;
+package com.dasa.splitspends.security;
 
 import java.io.IOException;
 

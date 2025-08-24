@@ -17,6 +17,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.dasa.splitspends.entity.User;
 import com.dasa.splitspends.repository.UserRepository;
+import com.dasa.splitspends.security.JwtAuthenticationFilter;
+import com.dasa.splitspends.security.JwtTokenProvider;
 
 @Configuration
 @EnableWebSecurity
