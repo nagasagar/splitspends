@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:splitspends_flutter/features/auth/data/models/auth_response.dart';
 import 'package:splitspends_flutter/features/auth/data/models/user.dart';
+import 'package:splitspends_flutter/features/users/data/users_repository.dart';
 
 // Provider for the repository
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -120,22 +121,11 @@ class AuthRepository {
   }
 
   Future<User?> getUserByEmail(String email, String token) async {
-    // Encode email for URL safety
-    final encodedEmail = Uri.encodeComponent(email);
-    final url = 'http://localhost:8080/api/users/email/$encodedEmail';
-
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+    final usersRepo = UsersRepository();
+    final data = await usersRepo.getUserByEmail(email);
+    if (data != null) {
       return User.fromJson(data);
     } else {
-      // Optionally: handle 404 (user not found) separately
       return null;
     }
   }
