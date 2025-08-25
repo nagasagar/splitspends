@@ -121,6 +121,13 @@ public class User {
     @Builder.Default
     private String language = "en";
 
+    // ========== SYSTEM ROLES ==========
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "system_role", length = 20)
+    @Builder.Default
+    private SystemRole systemRole = SystemRole.USER;
+
     // ========== AUDIT FIELDS ==========
 
     @CreationTimestamp
@@ -290,6 +297,36 @@ public class User {
                 .anyMatch(split -> !split.isSettled());
     }
 
+    // ========== SYSTEM ROLE METHODS ==========
+
+    /**
+     * Check if user is a super admin
+     */
+    public boolean isSuperAdmin() {
+        return SystemRole.SUPER_ADMIN.equals(systemRole);
+    }
+
+    /**
+     * Check if user has admin privileges (admin or super admin)
+     */
+    public boolean hasAdminPrivileges() {
+        return systemRole != null && systemRole.hasAdminPrivileges();
+    }
+
+    /**
+     * Check if user has system access (support, admin, or super admin)
+     */
+    public boolean hasSystemAccess() {
+        return systemRole != null && systemRole.hasSystemAccess();
+    }
+
+    /**
+     * Check if user can perform support operations
+     */
+    public boolean canProvideSupport() {
+        return SystemRole.SUPPORT.equals(systemRole) || hasAdminPrivileges();
+    }
+
     // ========== VALIDATION METHODS ==========
 
     @PrePersist
@@ -329,6 +366,31 @@ public class User {
 
         public String getDescription() {
             return description;
+        }
+    }
+
+    public enum SystemRole {
+        USER("Regular user"),
+        SUPPORT("Customer support agent"),
+        ADMIN("System administrator"),
+        SUPER_ADMIN("Super administrator");
+
+        private final String description;
+
+        SystemRole(String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public boolean hasAdminPrivileges() {
+            return this == ADMIN || this == SUPER_ADMIN;
+        }
+
+        public boolean hasSystemAccess() {
+            return this == SUPPORT || this == ADMIN || this == SUPER_ADMIN;
         }
     }
 }

@@ -238,6 +238,47 @@ public interface UserService {
      */
     User deactivateUser(Long userId);
 
+    // ========== SUPER ADMIN METHODS ==========
+
+    /**
+     * Get all users with pagination (super admin only).
+     * 
+     * @param pageable the pagination information
+     * @return a page of User entities
+     */
+    Page<User> getAllUsers(Pageable pageable);
+
+    /**
+     * Search users by name or email with pagination (super admin only).
+     * 
+     * @param searchQuery the search query
+     * @param pageable    the pagination information
+     * @return a page of matching User entities
+     */
+    Page<User> searchUsers(String searchQuery, Pageable pageable);
+
+    /**
+     * Get total user count (super admin only).
+     * 
+     * @return the total number of users
+     */
+    Long getTotalUserCount();
+
+    /**
+     * Get active user count (super admin only).
+     * 
+     * @return the number of active users
+     */
+    Long getActiveUserCount();
+
+    /**
+     * Reset user password and generate temporary password (super admin only).
+     * 
+     * @param userId the user's ID
+     * @return the temporary password
+     */
+    String resetPassword(Long userId);
+
     /**
      * DTO for user statistics.
      */

@@ -38,6 +38,12 @@
             "type": "java.lang.String",
             "description": "Directory path for storing uploaded files. Used by AttachmentServiceImpl for saving user-uploaded attachments. Default is 'uploads' in the project root.",
             "defaultValue": "uploads"
+        },
+        {
+            "name": "app.email.verification.enabled",
+            "type": "java.lang.Boolean",
+            "description": "Enable or disable email verification for new users.",
+            "defaultValue": false
         }
     ]
 }

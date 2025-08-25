@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -451,6 +453,40 @@ public class GroupServiceImpl implements GroupService {
     public List<User> getUsersForInvitation(Long groupId, String searchQuery) {
         Group group = getGroupById(groupId);
         return userRepository.findUsersNotInGroup(searchQuery, group);
+    }
+
+    // ========== SUPER ADMIN METHODS ==========
+
+    /**
+     * Get all groups with pagination (super admin only)
+     */
+    @Override
+    public Page<Group> getAllGroups(Pageable pageable) {
+        return groupRepository.findAll(pageable);
+    }
+
+    /**
+     * Search groups by name with pagination (super admin only)
+     */
+    @Override
+    public Page<Group> searchGroups(String searchQuery, Pageable pageable) {
+        return groupRepository.findByNameContainingIgnoreCase(searchQuery, pageable);
+    }
+
+    /**
+     * Get total group count (super admin only)
+     */
+    @Override
+    public Long getTotalGroupCount() {
+        return groupRepository.count();
+    }
+
+    /**
+     * Get active group count (super admin only)
+     */
+    @Override
+    public Long getActiveGroupCount() {
+        return groupRepository.countByStatusAndDeletedAtIsNull(Group.GroupStatus.ACTIVE);
     }
 
     // ========== DTO CLASSES ==========

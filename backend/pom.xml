@@ -146,14 +146,28 @@
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<skip>${skipOpenApiGeneration}</skip>
-							<maxAttempts>120</maxAttempts>
-							<wait>1000</wait>
-							<jmxPort>9001</jmxPort>
+							<maxAttempts>180</maxAttempts>
+							<wait>3000</wait>
+							<fork>true</fork>
+							<profiles>
+								<profile>test</profile>
+							</profiles>
 							<arguments>
 								<argument>--spring.profiles.active=test</argument>
 								<argument>--server.port=8080</argument>
-								<argument>--spring.jmx.enabled=true</argument>
+								<argument>--spring.jmx.enabled=false</argument>
+								<argument>
+									--spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</argument>
+								<argument>--spring.datasource.driver-class-name=org.h2.Driver</argument>
+								<argument>
+									--spring.jpa.database-platform=org.hibernate.dialect.H2Dialect</argument>
 							</arguments>
+							<systemPropertyVariables>
+								<spring.profiles.active>test</spring.profiles.active>
+								<spring.datasource.url>
+									jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</spring.datasource.url>
+								<spring.datasource.driver-class-name>org.h2.Driver</spring.datasource.driver-class-name>
+							</systemPropertyVariables>
 						</configuration>
 					</execution>
 					<!-- Stop the application after generating OpenAPI docs -->

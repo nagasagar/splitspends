@@ -402,4 +402,75 @@ public class UserServiceImpl implements UserService {
         user.setAccountStatus(User.AccountStatus.INACTIVE);
         return userRepository.save(user);
     }
+
+    // ========== SUPER ADMIN METHODS ==========
+
+    /**
+     * Get all users with pagination (super admin only)
+     */
+    @Override
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    /**
+     * Search users by name or email with pagination (super admin only)
+     */
+    @Override
+    public Page<User> searchUsers(String searchQuery, Pageable pageable) {
+        return userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(searchQuery, searchQuery,
+                pageable);
+    }
+
+    /**
+     * Get total user count (super admin only)
+     */
+    @Override
+    public Long getTotalUserCount() {
+        return userRepository.count();
+    }
+
+    /**
+     * Get active user count (super admin only)
+     */
+    @Override
+    public Long getActiveUserCount() {
+        return userRepository.countByAccountStatusAndDeletedAtIsNull(User.AccountStatus.ACTIVE);
+    }
+
+    /**
+     * Reset user password and generate temporary password (super admin only)
+     */
+    @Override
+    public String resetPassword(Long userId) {
+        User user = getUserById(userId);
+
+        // Generate temporary password
+        String temporaryPassword = generateTemporaryPassword();
+
+        // Update user password
+        user.setPasswordHash(passwordEncoder.encode(temporaryPassword));
+        userRepository.save(user);
+
+        // TODO: Send email with temporary password
+        // emailService.sendPasswordResetEmail(user.getEmail(), temporaryPassword);
+
+        return temporaryPassword;
+    }
+
+    /**
+     * Generate a secure temporary password
+     */
+    private String generateTemporaryPassword() {
+        // Generate 12-character password with mixed case, numbers, and special chars
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
+        StringBuilder password = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+
+        for (int i = 0; i < 12; i++) {
+            password.append(chars.charAt(random.nextInt(chars.length())));
+        }
+
+        return password.toString();
+    }
 }

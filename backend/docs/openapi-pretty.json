@@ -625,6 +625,162 @@
         }
       }
     },
+    "/api/admin/users/{userId}/suspend" : {
+      "put" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "suspendUser",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "reason",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}/reset-password" : {
+      "put" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "resetUserPassword",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}/reactivate" : {
+      "put" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "reactivateUser_1",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}/gdpr-delete" : {
+      "put" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "deleteUserDataForCompliance",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "legalBasis",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/groups/{groupId}/moderate" : {
+      "put" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "moderateGroup",
+        "parameters" : [ {
+          "name" : "groupId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "reason",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/verify-email" : {
       "post" : {
         "tags" : [ "email-verification-controller" ],
@@ -2619,6 +2775,223 @@
         }
       }
     },
+    "/api/admin/users" : {
+      "get" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "getAllUsers",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "search",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}" : {
+      "get" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "getUserById",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}/groups" : {
+      "get" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "getUserGroupsForSupport",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/GroupResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}/export" : {
+      "get" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "exportUserData",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/stats" : {
+      "get" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "getPlatformStats",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlatformStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/groups" : {
+      "get" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "getAllGroups",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "search",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/groups/{groupId}" : {
+      "get" : {
+        "tags" : [ "super-admin-controller" ],
+        "operationId" : "getGroupById",
+        "parameters" : [ {
+          "name" : "groupId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/notifications/{notificationId}" : {
       "delete" : {
         "tags" : [ "notification-controller" ],
@@ -3059,11 +3432,11 @@
           "pdf" : {
             "type" : "boolean"
           },
-          "deleted" : {
-            "type" : "boolean"
-          },
           "thumbnailUrl" : {
             "type" : "string"
+          },
+          "deleted" : {
+            "type" : "boolean"
           }
         },
         "required" : [ "contentType", "filePath", "originalFilename", "storedFilename" ]
@@ -3116,27 +3489,10 @@
             "type" : "string",
             "format" : "date-time"
           },
-          "participantCount" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
           "formattedAmount" : {
             "type" : "string"
           },
           "fullySettled" : {
-            "type" : "boolean"
-          },
-          "activeAttachments" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/Attachment"
-            },
-            "uniqueItems" : true
-          },
-          "totalSplitAmount" : {
-            "type" : "number"
-          },
-          "splitAmountValid" : {
             "type" : "boolean"
           },
           "ageInDays" : {
@@ -3145,6 +3501,23 @@
           },
           "unsettledAmount" : {
             "type" : "number"
+          },
+          "splitAmountValid" : {
+            "type" : "boolean"
+          },
+          "totalSplitAmount" : {
+            "type" : "number"
+          },
+          "participantCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "activeAttachments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Attachment"
+            },
+            "uniqueItems" : true
           }
         },
         "required" : [ "amount", "date", "description" ]
@@ -3496,14 +3869,14 @@
             "type" : "integer",
             "format" : "int32"
           },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "first" : {
             "type" : "boolean"
           },
           "last" : {
             "type" : "boolean"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
@@ -3520,16 +3893,16 @@
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "pageSize" : {
             "type" : "integer",
             "format" : "int32"
           },
           "paged" : {
             "type" : "boolean"
-          },
-          "pageNumber" : {
-            "type" : "integer",
-            "format" : "int32"
           },
           "unpaged" : {
             "type" : "boolean"
@@ -3642,17 +4015,17 @@
           "sessionId" : {
             "type" : "string"
           },
-          "formattedDescription" : {
-            "type" : "string"
-          },
           "ageInMinutes" : {
             "type" : "integer",
             "format" : "int64"
           },
+          "relativeTime" : {
+            "type" : "string"
+          },
           "recent" : {
             "type" : "boolean"
           },
-          "relativeTime" : {
+          "formattedDescription" : {
             "type" : "string"
           }
         },
@@ -3721,6 +4094,10 @@
           "language" : {
             "type" : "string"
           },
+          "systemRole" : {
+            "type" : "string",
+            "enum" : [ "USER", "SUPPORT", "ADMIN", "SUPER_ADMIN" ]
+          },
           "joinedAt" : {
             "type" : "string",
             "format" : "date-time"
@@ -3739,20 +4116,19 @@
           "displayName" : {
             "type" : "string"
           },
+          "username" : {
+            "type" : "string"
+          },
+          "superAdmin" : {
+            "type" : "boolean"
+          },
           "googleUser" : {
             "type" : "boolean"
           },
           "verified" : {
             "type" : "boolean"
           },
-          "username" : {
-            "type" : "string"
-          },
           "unreadNotificationsCount" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "pendingSettlementsCount" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -3762,6 +4138,10 @@
               "$ref" : "#/components/schemas/ActivityLog"
             },
             "uniqueItems" : true
+          },
+          "pendingSettlementsCount" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "email", "name" ]
@@ -3781,11 +4161,11 @@
           "netBalance" : {
             "type" : "number"
           },
-          "absoluteBalance" : {
-            "type" : "number"
-          },
           "owedByGroup" : {
             "type" : "boolean"
+          },
+          "absoluteBalance" : {
+            "type" : "number"
           }
         }
       },
@@ -3811,6 +4191,123 @@
           "settlementPercentage" : {
             "type" : "number",
             "format" : "double"
+          }
+        }
+      },
+      "PageUserResponse" : {
+        "type" : "object",
+        "properties" : {
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UserResponse"
+            }
+          },
+          "number" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "empty" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PlatformStats" : {
+        "type" : "object",
+        "properties" : {
+          "totalUsers" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "activeUsers" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalGroups" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "activeGroups" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalExpenses" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "PageGroupResponse" : {
+        "type" : "object",
+        "properties" : {
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/GroupResponse"
+            }
+          },
+          "number" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "numberOfElements" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "empty" : {
+            "type" : "boolean"
           }
         }
       }

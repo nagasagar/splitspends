@@ -27,6 +27,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Search users by name or email (for adding to groups)
     List<User> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
 
+    // Search users by name or email with pagination (for super admin)
+    Page<User> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email, Pageable pageable);
+
     // Find users by name only (alternative search)
     List<User> findByNameContainingIgnoreCase(String name);
 

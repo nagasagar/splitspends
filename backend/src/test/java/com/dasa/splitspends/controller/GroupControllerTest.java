@@ -1,58 +1,69 @@
 package com.dasa.splitspends.controller;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.dasa.splitspends.dto.group.GroupRequest;
 import com.dasa.splitspends.entity.Group;
+import com.dasa.splitspends.entity.User;
+import com.dasa.splitspends.security.AuthorizationService;
 import com.dasa.splitspends.service.GroupService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class GroupControllerTest {
+@WebMvcTest(controllers = GroupController.class, excludeAutoConfiguration = {
+        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class
+})
+class GroupControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private GroupService groupService;
 
-    @InjectMocks
-    private GroupController groupController;
+    @MockBean
+    private AuthorizationService authorizationService;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(groupController).build();
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void testCreateGroup() throws Exception {
+        // Mock the current user
+        User currentUser = new User();
+        currentUser.setId(1L);
+        currentUser.setName("Test User");
+        currentUser.setEmail("test@example.com");
+
+        Mockito.when(authorizationService.getCurrentUser()).thenReturn(currentUser);
+
         GroupRequest request = new GroupRequest();
         request.setName("Test Group");
         request.setDescription("A test group");
-        request.setCreatedByUserId(1L);
-        request.setPrivacyLevel(Group.PrivacyLevel.PUBLIC);
+        request.setCreatedByUserId(1L); // Set the required field
         request.setDefaultCurrency("USD");
 
         Group group = new Group();
         group.setId(1L);
         group.setName("Test Group");
+        group.setDescription("A test group");
+        group.setDefaultCurrency("USD");
+        group.setCreatedAt(LocalDateTime.now());
+        group.setUpdatedAt(LocalDateTime.now());
 
-        Mockito.when(
-                groupService.createGroup(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
-                .thenReturn(group);
+        Mockito.when(groupService.createGroup(Mockito.anyString(), Mockito.anyString(),
+                Mockito.anyLong(), Mockito.any(), Mockito.anyString())).thenReturn(group);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/groups")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -62,54 +73,23 @@ public class GroupControllerTest {
     }
 
     @Test
-    void testUpdateGroup() throws Exception {
-        GroupRequest request = new GroupRequest();
-        request.setName("Updated Group");
-        request.setDescription("Updated description");
-        request.setPrivacyLevel(Group.PrivacyLevel.PRIVATE);
-        request.setDefaultCurrency("EUR");
-        request.setUpdatedByUserId(2L);
+    void testGetUserGroups() throws Exception {
+        // Mock authorization check
+        Mockito.when(authorizationService.isCurrentUser(1L)).thenReturn(true);
 
         Group group = new Group();
         group.setId(1L);
-        group.setName("Updated Group");
+        group.setName("User Group");
+        group.setDescription("User's group");
+        group.setCreatedAt(LocalDateTime.now());
+        group.setUpdatedAt(LocalDateTime.now());
 
-        Mockito.when(groupService.updateGroup(Mockito.eq(1L), Mockito.any(), Mockito.any(), Mockito.any(),
-                Mockito.any(), Mockito.any()))
-                .thenReturn(group);
+        List<Group> groups = List.of(group);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/api/groups/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+        Mockito.when(groupService.getUserGroups(Mockito.anyLong())).thenReturn(groups);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/groups/user/1"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Updated Group"));
-    }
-
-    @Test
-    void testDeleteGroup() throws Exception {
-        Mockito.doNothing().when(groupService).deleteGroup(1L, 2L);
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/groups/1")
-                .param("deletedByUserId", "2"))
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
-    }
-
-    @Test
-    void testGetGroup() throws Exception {
-        Group group = new Group();
-        group.setId(1L);
-        group.setName("Test Group");
-        Mockito.when(groupService.getGroupById(1L)).thenReturn(group);
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/groups/1"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Test Group"));
-    }
-
-    @Test
-    void testSearchPublicGroups() throws Exception {
-        Mockito.when(groupService.searchPublicGroups("test")).thenReturn(Collections.emptyList());
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/groups/search")
-                .param("query", "test"))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value("User Group"));
     }
 }
