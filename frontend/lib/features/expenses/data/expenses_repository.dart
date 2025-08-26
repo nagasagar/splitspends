@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:splitspends_flutter/shared/app_config.dart';
+import 'package:splitspends_flutter/core/config/app_config.dart';
 
 class ExpensesRepository {
   Future<Map<String, dynamic>> getUserExpenseStats(String userId) async {

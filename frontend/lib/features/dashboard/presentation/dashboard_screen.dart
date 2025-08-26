@@ -159,6 +159,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Colors.red[100]!,
                 Colors.red[600]!,
                 Icons.arrow_upward,
+                () => context.push('/balances/you-owe'),
               ),
             ),
             const SizedBox(width: 12),
@@ -169,6 +170,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Colors.green[100]!,
                 Colors.green[600]!,
                 Icons.arrow_downward,
+                () => context.push('/balances/you-are-owed'),
               ),
             ),
           ],
@@ -183,6 +185,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Colors.blue[100]!,
                 Colors.blue[600]!,
                 Icons.group,
+                () => context.push('/groups'),
               ),
             ),
             const SizedBox(width: 12),
@@ -193,6 +196,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Colors.orange[100]!,
                 Colors.orange[600]!,
                 Icons.receipt,
+                () => context.push('/expenses'),
               ),
             ),
           ],
@@ -201,40 +205,45 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildSummaryCard(String title, String value, Color bgColor, Color textColor, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: textColor, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+  Widget _buildSummaryCard(
+      String title, String value, Color bgColor, Color textColor, IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: textColor, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -271,6 +280,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 () => context.push('/groups/create'),
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                'Settle Up',
+                Icons.account_balance_wallet,
+                Colors.green[600]!,
+                () => context.push('/settle-up'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Empty space to maintain layout
+            const Expanded(child: SizedBox()),
           ],
         ),
       ],
@@ -365,87 +390,103 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         iconColor = Colors.grey[600]!;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+    return InkWell(
+      onTap: () => _onActivityItemTap(activity),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  activity.description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    activity.description,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    if (activity.groupName != null) ...[
-                      Text(
-                        activity.groupName!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      if (activity.groupName != null) ...[
+                        Text(
+                          activity.groupName!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
+                        Text(
+                          ' • ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                       Text(
-                        ' • ',
+                        _getTimeAgo(activity.timestamp),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
                         ),
                       ),
                     ],
-                    Text(
-                      _getTimeAgo(activity.timestamp),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          if (activity.amount != null)
-            Text(
-              '\$${activity.amount!.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: activity.type == 'settlement_completed' ? Colors.green[600] : Colors.black87,
+                  ),
+                ],
               ),
             ),
-        ],
+            if (activity.amount != null)
+              Text(
+                '\$${activity.amount!.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: activity.type == 'settlement_completed' ? Colors.green[600] : Colors.black87,
+                ),
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _onActivityItemTap(RecentActivity activity) {
+    // Navigate based on activity type
+    if (activity.type == 'expense_added') {
+      context.push('/expenses/${activity.id}');
+    } else if (activity.groupName != null) {
+      // If we have group name but no specific expense, navigate to group
+      // In a real app, you'd have a group ID
+      final groupId = '1'; // This would come from activity.groupId
+      context.push('/groups/$groupId');
+    }
   }
 
   Widget _buildGroupsList(List<GroupSummary> groups) {

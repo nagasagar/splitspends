@@ -84,10 +84,10 @@ class AuthRepository {
 
   // Get current user info using token (expects Authorization: Bearer ...)
   Future<User?> getCurrentUser(String token) async {
-    final userId = getUserIdFromToken(token);
-    if (userId == null) return null;
+    final email = getEmailFromToken(token);
+    if (email == null) return null;
 
-    final user = await getUserByEmail(userId, token);
+    final user = await getUserByEmail(email, token);
     if (user != null) {
       return user;
     } else {
@@ -122,7 +122,7 @@ class AuthRepository {
 
   Future<User?> getUserByEmail(String email, String token) async {
     final usersRepo = UsersRepository();
-    final data = await usersRepo.getUserByEmail(email);
+    final data = await usersRepo.getUserByEmail(email, token: token);
     if (data != null) {
       return User.fromJson(data);
     } else {

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:splitspends_flutter/shared/app_config.dart';
+import 'package:splitspends_flutter/core/config/app_config.dart';
 
 class GroupsRepository {
   /// Fetches a list of all groups where the user is a member.
