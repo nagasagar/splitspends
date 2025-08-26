@@ -13,6 +13,7 @@ AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) => AuthResponse(
       user: json['user'] == null
           ? null
           : User.fromJson(json['user'] as Map<String, dynamic>),
+      error: json['error'] as String?,
     );
 
 Map<String, dynamic> _$AuthResponseToJson(AuthResponse instance) =>
@@ -21,4 +22,5 @@ Map<String, dynamic> _$AuthResponseToJson(AuthResponse instance) =>
       'refreshToken': instance.refreshToken,
       'email': instance.email,
       'user': instance.user,
+      'error': instance.error,
     };
