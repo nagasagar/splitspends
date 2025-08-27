@@ -1,5 +1,15 @@
+# SplitSpends – Smart Expense Sharing App
 
+**Effortless group expense tracking and bill splitting made easy for trips, roommates, and beyond.**
 
+A full-featured expense-sharing app with a Spring Boot backend and Flutter frontend—intuitive for users, powerful for power users!
+
+---
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Flutter](https://img.shields.io/badge/Flutter-Latest-blue.svg)](https://flutter.dev/)
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.java.net/projects/jdk/17/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+---
 # Requirements
 
 - **User authentication:** Sign up/in, Google SSO
@@ -13,22 +23,16 @@
 - **Attachments:** Image upload for receipts (Cloudinary, S3, etc.)
 - **Real-time updates:** WebSocket for instant notifications
 
-# SplitSpends - Smart Expense Sharing App
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Flutter](https://img.shields.io/badge/Flutter-Latest-blue.svg)](https://flutter.dev/)
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.java.net/projects/jdk/17/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A comprehensive expense sharing application that makes splitting bills and managing group expenses effortless. Built with Spring Boot backend and Flutter frontend.
 
-## 🚀 Features
+
+## 🚀 Key Features
 
 ### 👥 **User Management**
 - User registration and authentication
 - Google SSO integration
 - Profile management
-- Activity tracking
 
 ### 🏠 **Group Management**
 - Create and manage expense groups
@@ -60,6 +64,11 @@ A comprehensive expense sharing application that makes splitting bills and manag
 - File validation and security
 - Storage management
 
+### **Activity Feed:**
+- Track expense activity
+- Track Group activity
+- Track Settlement activity
+  
 ## 🏗️ Architecture
 
 ### Backend (Spring Boot)
