@@ -145,30 +145,36 @@ public class User {
 
     @OneToMany(mappedBy = "paidBy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<Expense> expensesPaid;
+    @Builder.Default
+    private Set<Expense> expensesPaid = new HashSet<>();
 
     @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<Group> groups;
+    @Builder.Default
+    private Set<Group> groups = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<ExpenseSplit> expenseSplits;
+    @Builder.Default
+    private Set<ExpenseSplit> expenseSplits = new HashSet<>();
 
     // Notifications received by this user
     @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<Notification> notifications;
+    @Builder.Default
+    private Set<Notification> notifications = new HashSet<>();
 
     // Activity logs for actions performed by this user
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<ActivityLog> activityLogs;
+    @Builder.Default
+    private Set<ActivityLog> activityLogs = new HashSet<>();
 
     // Invitations sent by this user
     @OneToMany(mappedBy = "invitedBy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<Invitation> invitationsSent;
+    @Builder.Default
+    private Set<Invitation> invitationsSent = new HashSet<>();
 
     // Settlements where this user is the payer
     @OneToMany(mappedBy = "payer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -332,6 +338,23 @@ public class User {
     @PrePersist
     @PreUpdate
     private void validateUser() {
+        // Initialize collections if they are null
+        if (groups == null) {
+            this.groups = new HashSet<>();
+        }
+        if (expensesPaid == null) {
+            this.expensesPaid = new HashSet<>();
+        }
+        if (expenseSplits == null) {
+            this.expenseSplits = new HashSet<>();
+        }
+        if (notifications == null) {
+            this.notifications = new HashSet<>();
+        }
+        if (activityLogs == null) {
+            this.activityLogs = new HashSet<>();
+        }
+
         // Ensure either password or Google ID exists
         if ((passwordHash == null || passwordHash.trim().isEmpty()) &&
                 (googleId == null || googleId.trim().isEmpty())) {

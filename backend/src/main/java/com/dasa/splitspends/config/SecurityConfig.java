@@ -46,11 +46,16 @@ public class SecurityConfig {
                                 "/api/auth/resend-verification",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
-                                "/swagger-ui/**")
+                                "/swagger-ui/**",
+                                "/h2-console/**")
                         .permitAll()
                         .requestMatchers("/api/test").authenticated()
                         .anyRequest().authenticated())
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**")
+                        .disable())
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())) // Allow frames for H2 console
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
                     corsConfig.setAllowedOriginPatterns(java.util.List.of("*"));
