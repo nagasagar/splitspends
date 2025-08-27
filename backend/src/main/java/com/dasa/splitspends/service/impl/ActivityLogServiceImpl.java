@@ -763,4 +763,30 @@ public class ActivityLogServiceImpl implements ActivityLogService {
     public ActivityLog logAttachmentDeleted(Attachment attachment, User user) {
         return logAttachmentDeleted(user, attachment.getExpense().getGroup(), attachment);
     }
+
+    // ========== PAGINATION METHODS FOR CONTROLLERS ==========
+
+    /**
+     * Get user activities with pagination (by userId)
+     */
+    @Override
+    public Page<ActivityLog> getUserActivities(Long userId, Pageable pageable) {
+        return activityLogRepository.findByUserId(userId, pageable);
+    }
+
+    /**
+     * Get group activities with pagination (by groupId)
+     */
+    @Override
+    public Page<ActivityLog> getGroupActivities(Long groupId, Pageable pageable) {
+        return activityLogRepository.findByGroupId(groupId, pageable);
+    }
+
+    /**
+     * Get recent activities across all users with pagination
+     */
+    @Override
+    public Page<ActivityLog> getRecentActivities(Pageable pageable) {
+        return activityLogRepository.findAll(pageable);
+    }
 }

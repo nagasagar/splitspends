@@ -31,6 +31,11 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
         Page<ActivityLog> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
         /**
+         * Find activity logs by user ID with pagination
+         */
+        Page<ActivityLog> findByUserId(Long userId, Pageable pageable);
+
+        /**
          * Find activity logs by group
          */
         List<ActivityLog> findByGroupOrderByCreatedAtDesc(Group group);
@@ -39,6 +44,11 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
          * Find activity logs by group with pagination
          */
         Page<ActivityLog> findByGroupOrderByCreatedAtDesc(Group group, Pageable pageable);
+
+        /**
+         * Find activity logs by group ID with pagination
+         */
+        Page<ActivityLog> findByGroupId(Long groupId, Pageable pageable);
 
         /**
          * Find activity logs by action

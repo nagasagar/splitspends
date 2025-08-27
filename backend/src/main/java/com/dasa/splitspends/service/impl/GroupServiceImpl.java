@@ -18,6 +18,7 @@ import com.dasa.splitspends.entity.User;
 import com.dasa.splitspends.repository.ExpenseRepository;
 import com.dasa.splitspends.repository.GroupRepository;
 import com.dasa.splitspends.repository.UserRepository;
+import com.dasa.splitspends.service.ActivityLogService;
 import com.dasa.splitspends.service.GroupService;
 import com.dasa.splitspends.service.UserService;
 
@@ -36,6 +37,9 @@ public class GroupServiceImpl implements GroupService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ActivityLogService activityLogService;
 
     // ========== GROUP CREATION & MANAGEMENT ==========
 
@@ -64,7 +68,12 @@ public class GroupServiceImpl implements GroupService {
         // Add creator as member and admin
         group.addAdmin(creator);
 
-        return groupRepository.save(group);
+        Group savedGroup = groupRepository.save(group);
+
+        // Log activity
+        activityLogService.logGroupCreated(creator, savedGroup);
+
+        return savedGroup;
     }
 
     /**
@@ -95,7 +104,12 @@ public class GroupServiceImpl implements GroupService {
             group.setDefaultCurrency(defaultCurrency);
         }
 
-        return groupRepository.save(group);
+        Group updatedGroup = groupRepository.save(group);
+
+        // Log activity
+        activityLogService.logGroupUpdated(updatedBy, updatedGroup);
+
+        return updatedGroup;
     }
 
     /**
@@ -137,6 +151,8 @@ public class GroupServiceImpl implements GroupService {
         for (User user : usersToAdd) {
             if (!group.isMember(user)) {
                 group.addMember(user);
+                // Log activity for each member added
+                activityLogService.logMemberAdded(addedBy, group, user);
             }
         }
 
@@ -168,7 +184,13 @@ public class GroupServiceImpl implements GroupService {
         }
 
         group.removeMember(userToRemove);
-        return groupRepository.save(group);
+
+        Group updatedGroup = groupRepository.save(group);
+
+        // Log activity
+        activityLogService.logMemberRemoved(removedBy, updatedGroup, userToRemove);
+
+        return updatedGroup;
     }
 
     /**
@@ -190,7 +212,13 @@ public class GroupServiceImpl implements GroupService {
         }
 
         group.addAdmin(userToPromote);
-        return groupRepository.save(group);
+
+        Group updatedGroup = groupRepository.save(group);
+
+        // Log activity
+        activityLogService.logAdminPromoted(promotedBy, updatedGroup, userToPromote);
+
+        return updatedGroup;
     }
 
     /**
@@ -218,7 +246,13 @@ public class GroupServiceImpl implements GroupService {
         }
 
         group.removeAdmin(userToDemote);
-        return groupRepository.save(group);
+
+        Group updatedGroup = groupRepository.save(group);
+
+        // Log activity
+        activityLogService.logAdminDemoted(demotedBy, updatedGroup, userToDemote);
+
+        return updatedGroup;
     }
 
     // ========== GROUP RETRIEVAL ==========

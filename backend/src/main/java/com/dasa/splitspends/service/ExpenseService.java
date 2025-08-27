@@ -120,6 +120,15 @@ public interface ExpenseService {
         List<Expense> getUserExpenses(Long userId);
 
         /**
+         * Get paginated expenses involving a specific user.
+         * 
+         * @param userId   the user ID
+         * @param pageable pagination info
+         * @return list of expenses
+         */
+        List<Expense> getUserExpensesPaginated(Long userId, Pageable pageable);
+
+        /**
          * Get recent expenses for a group (for activity feed).
          * 
          * @param groupId the group ID

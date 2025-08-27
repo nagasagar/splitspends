@@ -26,6 +26,7 @@ import com.dasa.splitspends.repository.ExpenseRepository;
 import com.dasa.splitspends.repository.ExpenseSplitRepository;
 import com.dasa.splitspends.repository.GroupRepository;
 import com.dasa.splitspends.repository.UserRepository;
+import com.dasa.splitspends.service.ActivityLogService;
 import com.dasa.splitspends.service.ExpenseService;
 import com.dasa.splitspends.service.ExpenseSplitService;
 
@@ -49,6 +50,9 @@ public class ExpenseServiceImpl implements ExpenseService {
         @Autowired
         private ExpenseSplitService expenseSplitService;
 
+        @Autowired
+        private ActivityLogService activityLogService;
+
         @Override
         public Expense createExpenseWithEqualSplits(Long groupId, Long paidByUserId,
                         String description, BigDecimal amount,
@@ -71,6 +75,10 @@ public class ExpenseServiceImpl implements ExpenseService {
                                 .build();
                 expense = expenseRepository.save(expense);
                 createEqualSplits(expense, participants);
+
+                // Log activity
+                activityLogService.logExpenseCreated(paidBy, group, expense);
+
                 return expense;
         }
 
@@ -100,6 +108,10 @@ public class ExpenseServiceImpl implements ExpenseService {
                                 .build();
                 expense = expenseRepository.save(expense);
                 createCustomSplits(expense, userAmountMap, group);
+
+                // Log activity
+                activityLogService.logExpenseCreated(paidBy, group, expense);
+
                 return expense;
         }
 
@@ -119,7 +131,13 @@ public class ExpenseServiceImpl implements ExpenseService {
                 if (!expense.getAmount().equals(amount)) {
                         recalculateSplits(expense);
                 }
-                return expenseRepository.save(expense);
+
+                Expense updatedExpense = expenseRepository.save(expense);
+
+                // Log activity
+                activityLogService.logExpenseUpdated(updatedBy, expense.getGroup(), updatedExpense);
+
+                return updatedExpense;
         }
 
         @Override
@@ -132,6 +150,9 @@ public class ExpenseServiceImpl implements ExpenseService {
                 expense.setStatus(Expense.ExpenseStatus.DELETED);
                 expense.setUpdatedBy(deletedBy);
                 expenseRepository.save(expense);
+
+                // Log activity
+                activityLogService.logExpenseDeleted(deletedBy, expense.getGroup(), expense);
         }
 
         @Override
@@ -148,6 +169,14 @@ public class ExpenseServiceImpl implements ExpenseService {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
                 return expenseRepository.findExpensesInvolvingUser(user);
+        }
+
+        @Override
+        public List<Expense> getUserExpensesPaginated(Long userId, Pageable pageable) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                Page<Expense> expensePage = expenseRepository.findExpensesInvolvingUser(user, pageable);
+                return expensePage.getContent();
         }
 
         @Override

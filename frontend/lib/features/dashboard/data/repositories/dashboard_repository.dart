@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/dashboard_models.dart';
 
 class DashboardRepository {
@@ -29,7 +30,19 @@ class DashboardRepository {
   Future<DashboardSummary> getDashboardSummary(String userId) async {
     try {
       final response = await _dio.get('$baseUrl/api/dashboard/summary/$userId');
-      return DashboardSummary.fromJson(response.data);
+      final data = response.data;
+
+      // Map backend response to frontend model
+      final userSummary = data['userSummary'];
+      final financialSummary = data['financialSummary'];
+
+      return DashboardSummary(
+        totalOwed: (financialSummary['totalOwed'] as num?)?.toDouble() ?? 0.0,
+        totalToReceive: (financialSummary['totalOwing'] as num?)?.toDouble() ?? 0.0,
+        groupCount: userSummary['totalGroups'] as int? ?? 0,
+        expenseCount: userSummary['totalExpenses'] as int? ?? 0,
+        monthlySpending: (financialSummary['totalPaid'] as num?)?.toDouble() ?? 0.0,
+      );
     } catch (e) {
       // Return mock data for now
       return const DashboardSummary(
@@ -45,11 +58,22 @@ class DashboardRepository {
   Future<List<RecentActivity>> getRecentActivities(String userId, {int limit = 10}) async {
     try {
       final response = await _dio.get(
-        '$baseUrl/api/dashboard/activities/$userId',
+        '$baseUrl/api/activities/user/$userId',
         queryParameters: {'limit': limit},
       );
       final List<dynamic> data = response.data;
-      return data.map((item) => RecentActivity.fromJson(item)).toList();
+      
+      return data
+          .map((item) => RecentActivity(
+                id: item['id'].toString(),
+                type: _mapActionToType(item['action']),
+                description: item['description'] as String,
+                timestamp: DateTime.parse(item['createdAt'] as String),
+                amount: null, // Activity logs don't have amounts directly
+                groupName: item['groupName'] as String?,
+                currency: null,
+              ))
+          .toList();
     } catch (e) {
       // Return mock data for now
       return [
@@ -84,11 +108,47 @@ class DashboardRepository {
     }
   }
 
+  String _mapActionToType(String action) {
+    switch (action) {
+      case 'CREATE':
+        return 'expense_added';
+      case 'COMPLETE':
+        return 'settlement_completed';
+      case 'REQUEST_SETTLEMENT':
+        return 'settlement_requested';
+      case 'ACCEPT_SETTLEMENT':
+        return 'settlement_completed';
+      case 'REJECT_SETTLEMENT':
+        return 'settlement_rejected';
+      case 'UPDATE':
+        return 'expense_updated';
+      case 'DELETE':
+        return 'expense_deleted';
+      case 'JOIN_GROUP':
+        return 'group_joined';
+      case 'LEAVE_GROUP':
+        return 'group_left';
+      default:
+        return 'activity';
+    }
+  }
+
   Future<List<GroupSummary>> getUserGroups(String userId) async {
     try {
-      final response = await _dio.get('$baseUrl/api/dashboard/groups/$userId');
+      final response = await _dio.get('$baseUrl/api/groups/user/$userId');
       final List<dynamic> data = response.data;
-      return data.map((item) => GroupSummary.fromJson(item)).toList();
+      
+      return data
+          .map((item) => GroupSummary(
+                id: item['id'].toString(),
+                name: item['name'] as String,
+                description: item['description'] as String?,
+                memberCount: item['memberCount'] as int? ?? 0,
+                userBalance: 0.0, // Would need additional calculation from backend
+                groupImageUrl: item['groupImageUrl'] as String?,
+                lastActivity: DateTime.parse(item['updatedAt'] as String),
+              ))
+          .toList();
     } catch (e) {
       // Return mock data for now
       return [
