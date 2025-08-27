@@ -2569,6 +2569,199 @@
         }
       }
     },
+    "/api/dashboard/summary/{userId}" : {
+      "get" : {
+        "tags" : [ "dashboard-controller" ],
+        "operationId" : "getDashboardSummary",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DashboardSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard/stats/{userId}" : {
+      "get" : {
+        "tags" : [ "dashboard-controller" ],
+        "operationId" : "getUserStats_1",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : { }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard/recent-expenses/{userId}" : {
+      "get" : {
+        "tags" : [ "dashboard-controller" ],
+        "operationId" : "getRecentExpenses",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : { }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard/pending-settlements/{userId}" : {
+      "get" : {
+        "tags" : [ "dashboard-controller" ],
+        "operationId" : "getPendingSettlements_1",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : { }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard/groups/{userId}" : {
+      "get" : {
+        "tags" : [ "dashboard-controller" ],
+        "operationId" : "getUserGroups_1",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : { }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard/flexible/{userId}" : {
+      "get" : {
+        "tags" : [ "dashboard-controller" ],
+        "operationId" : "getFlexibleDashboard",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "include",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "stats,groups,expenses,settlements,activities"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : { }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/attachments/{attachmentId}" : {
       "get" : {
         "tags" : [ "attachment-controller" ],
@@ -2985,6 +3178,115 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/GroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/activities/user/{userId}" : {
+      "get" : {
+        "tags" : [ "activity-controller" ],
+        "operationId" : "getUserActivities",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ActivityLogResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/activities/recent" : {
+      "get" : {
+        "tags" : [ "activity-controller" ],
+        "operationId" : "getRecentActivities",
+        "parameters" : [ {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ActivityLogResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/activities/group/{groupId}" : {
+      "get" : {
+        "tags" : [ "activity-controller" ],
+        "operationId" : "getGroupActivities",
+        "parameters" : [ {
+          "name" : "groupId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ActivityLogResponse"
+                  }
                 }
               }
             }
@@ -3423,17 +3725,17 @@
           "formattedFileSize" : {
             "type" : "string"
           },
-          "image" : {
-            "type" : "boolean"
-          },
           "allowedFileType" : {
             "type" : "boolean"
           },
-          "pdf" : {
+          "image" : {
             "type" : "boolean"
           },
           "thumbnailUrl" : {
             "type" : "string"
+          },
+          "pdf" : {
+            "type" : "boolean"
           },
           "deleted" : {
             "type" : "boolean"
@@ -3495,16 +3797,6 @@
           "fullySettled" : {
             "type" : "boolean"
           },
-          "ageInDays" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "unsettledAmount" : {
-            "type" : "number"
-          },
-          "splitAmountValid" : {
-            "type" : "boolean"
-          },
           "totalSplitAmount" : {
             "type" : "number"
           },
@@ -3518,6 +3810,16 @@
               "$ref" : "#/components/schemas/Attachment"
             },
             "uniqueItems" : true
+          },
+          "ageInDays" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "unsettledAmount" : {
+            "type" : "number"
+          },
+          "splitAmountValid" : {
+            "type" : "boolean"
           }
         },
         "required" : [ "amount", "date", "description" ]
@@ -3840,13 +4142,19 @@
       "PageNotificationResponse" : {
         "type" : "object",
         "properties" : {
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
           },
-          "totalPages" : {
-            "type" : "integer",
-            "format" : "int32"
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
           },
           "size" : {
             "type" : "integer",
@@ -3869,12 +4177,6 @@
             "type" : "integer",
             "format" : "int32"
           },
-          "first" : {
-            "type" : "boolean"
-          },
-          "last" : {
-            "type" : "boolean"
-          },
           "pageable" : {
             "$ref" : "#/components/schemas/PageableObject"
           },
@@ -3893,16 +4195,16 @@
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
-          "pageNumber" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
           "pageSize" : {
             "type" : "integer",
             "format" : "int32"
           },
           "paged" : {
             "type" : "boolean"
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
           },
           "unpaged" : {
             "type" : "boolean"
@@ -3915,10 +4217,10 @@
           "empty" : {
             "type" : "boolean"
           },
-          "sorted" : {
+          "unsorted" : {
             "type" : "boolean"
           },
-          "unsorted" : {
+          "sorted" : {
             "type" : "boolean"
           }
         }
@@ -4015,18 +4317,18 @@
           "sessionId" : {
             "type" : "string"
           },
-          "ageInMinutes" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "relativeTime" : {
+          "formattedDescription" : {
             "type" : "string"
           },
           "recent" : {
             "type" : "boolean"
           },
-          "formattedDescription" : {
+          "relativeTime" : {
             "type" : "string"
+          },
+          "ageInMinutes" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "description" ]
@@ -4122,13 +4424,11 @@
           "superAdmin" : {
             "type" : "boolean"
           },
-          "googleUser" : {
-            "type" : "boolean"
-          },
-          "verified" : {
-            "type" : "boolean"
-          },
           "unreadNotificationsCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "pendingSettlementsCount" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -4139,9 +4439,11 @@
             },
             "uniqueItems" : true
           },
-          "pendingSettlementsCount" : {
-            "type" : "integer",
-            "format" : "int64"
+          "googleUser" : {
+            "type" : "boolean"
+          },
+          "verified" : {
+            "type" : "boolean"
           }
         },
         "required" : [ "email", "name" ]
@@ -4194,16 +4496,285 @@
           }
         }
       },
+      "ActivityLogResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "action" : {
+            "type" : "string",
+            "enum" : [ "CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "REGISTER", "JOIN_GROUP", "LEAVE_GROUP", "ADD_MEMBER", "REMOVE_MEMBER", "PROMOTE_ADMIN", "DEMOTE_ADMIN", "SPLIT_EXPENSE", "SETTLE_EXPENSE", "REQUEST_SETTLEMENT", "ACCEPT_SETTLEMENT", "REJECT_SETTLEMENT", "COMPLETE", "SEND_INVITATION", "ACCEPT_INVITATION", "DECLINE_INVITATION", "UPLOAD_ATTACHMENT", "DOWNLOAD_ATTACHMENT", "DELETE_ATTACHMENT", "ARCHIVE", "RESTORE", "EXPORT", "CANCEL_INVITATION" ]
+          },
+          "entityType" : {
+            "type" : "string",
+            "enum" : [ "USER", "GROUP", "EXPENSE", "EXPENSE_SPLIT", "SETTLEMENT", "INVITATION", "NOTIFICATION", "ATTACHMENT" ]
+          },
+          "entityId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "details" : {
+            "type" : "string"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userName" : {
+            "type" : "string"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "targetUser" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "ipAddress" : {
+            "type" : "string"
+          },
+          "userAgent" : {
+            "type" : "string"
+          },
+          "sessionId" : {
+            "type" : "string"
+          },
+          "metadata" : {
+            "type" : "string"
+          }
+        }
+      },
+      "DashboardSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "userSummary" : {
+            "$ref" : "#/components/schemas/UserSummary"
+          },
+          "recentGroups" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/GroupResponse"
+            }
+          },
+          "recentExpenses" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpenseResponse"
+            }
+          },
+          "pendingSettlements" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SettlementResponse"
+            }
+          },
+          "recentActivities" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ActivityLogResponse"
+            }
+          },
+          "financialSummary" : {
+            "$ref" : "#/components/schemas/FinancialSummary"
+          }
+        }
+      },
+      "ExpenseResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "currency" : {
+            "type" : "string"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "category" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "paidById" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "paidByName" : {
+            "type" : "string"
+          },
+          "paidByEmail" : {
+            "type" : "string"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "participantCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalSplitAmount" : {
+            "type" : "number"
+          },
+          "isFullySettled" : {
+            "type" : "boolean"
+          },
+          "unsettledAmount" : {
+            "type" : "number"
+          },
+          "hasReceipts" : {
+            "type" : "boolean"
+          },
+          "attachmentUrl" : {
+            "type" : "string"
+          },
+          "attachmentFilename" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "ageInDays" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "splits" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpenseSplitResponse"
+            }
+          },
+          "formattedAmount" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ExpenseSplitResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userName" : {
+            "type" : "string"
+          },
+          "shareAmount" : {
+            "type" : "number"
+          },
+          "sharePercentage" : {
+            "type" : "number"
+          },
+          "splitType" : {
+            "type" : "string"
+          },
+          "isSettled" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "FinancialSummary" : {
+        "type" : "object",
+        "properties" : {
+          "totalOwed" : {
+            "type" : "number"
+          },
+          "totalOwing" : {
+            "type" : "number"
+          },
+          "netBalance" : {
+            "type" : "number"
+          },
+          "totalPaid" : {
+            "type" : "number"
+          },
+          "totalReceived" : {
+            "type" : "number"
+          },
+          "pendingSettlementAmount" : {
+            "type" : "number"
+          }
+        }
+      },
+      "UserSummary" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "profilePictureUrl" : {
+            "type" : "string"
+          },
+          "totalGroups" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalExpenses" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pendingSettlementsCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "PageUserResponse" : {
         "type" : "object",
         "properties" : {
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
           },
-          "totalPages" : {
-            "type" : "integer",
-            "format" : "int32"
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
           },
           "size" : {
             "type" : "integer",
@@ -4225,12 +4796,6 @@
           "numberOfElements" : {
             "type" : "integer",
             "format" : "int32"
-          },
-          "first" : {
-            "type" : "boolean"
-          },
-          "last" : {
-            "type" : "boolean"
           },
           "pageable" : {
             "$ref" : "#/components/schemas/PageableObject"
@@ -4268,13 +4833,19 @@
       "PageGroupResponse" : {
         "type" : "object",
         "properties" : {
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
           },
-          "totalPages" : {
-            "type" : "integer",
-            "format" : "int32"
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
           },
           "size" : {
             "type" : "integer",
@@ -4296,12 +4867,6 @@
           "numberOfElements" : {
             "type" : "integer",
             "format" : "int32"
-          },
-          "first" : {
-            "type" : "boolean"
-          },
-          "last" : {
-            "type" : "boolean"
           },
           "pageable" : {
             "$ref" : "#/components/schemas/PageableObject"
