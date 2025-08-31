@@ -102,14 +102,20 @@ public class DashboardService {
                 userStats.getTotalExpensesPaid().intValue(),
                 pendingSettlements.size());
 
-        // Create financial summary (simplified since UserStats doesn't have financial
-        // details)
+        // Calculate financial statistics for comprehensive summary
+        BigDecimal totalOwed = settleUpService.getPendingAmountByUser(userId); // Amount user owes to others
+        BigDecimal totalOwing = getPendingAmountOwedToUser(userId); // Amount others owe to user
+        BigDecimal netBalance = totalOwing.subtract(totalOwed); // Net balance
+        BigDecimal totalPaid = getTotalPaidByUser(userId); // Total amount user has paid
+        BigDecimal totalReceived = getTotalReceivedByUser(userId); // Total amount user has received
+
+        // Create financial summary with calculated values
         DashboardSummaryResponse.FinancialSummary financialSummary = new DashboardSummaryResponse.FinancialSummary(
-                BigDecimal.ZERO, // totalOwed - would need additional calculation
-                BigDecimal.ZERO, // totalOwing - would need additional calculation
-                BigDecimal.ZERO, // netBalance - would need additional calculation
-                BigDecimal.ZERO, // totalPaid - would need additional calculation
-                BigDecimal.ZERO, // totalReceived - would need additional calculation
+                totalOwed,
+                totalOwing,
+                netBalance,
+                totalPaid,
+                totalReceived,
                 pendingAmount);
 
         return new DashboardSummaryResponse(
@@ -166,7 +172,6 @@ public class DashboardService {
         UserStats userStats = userService.getUserStats(userId);
         List<Group> userGroups = groupService.getUserGroups(userId);
         List<SettleUp> pendingSettlements = settleUpService.getPendingSettlements(userId);
-        BigDecimal pendingAmount = settleUpService.getPendingAmountByUser(userId);
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("userName", user.getName());
@@ -175,11 +180,20 @@ public class DashboardService {
         stats.put("totalGroups", userGroups.size());
         stats.put("totalExpenses", userStats.getTotalExpensesPaid());
         stats.put("pendingSettlements", pendingSettlements.size());
-        stats.put("totalOwed", BigDecimal.ZERO); // TODO Would need calculation
-        stats.put("totalOwing", BigDecimal.ZERO); // TODO Would need calculation
-        stats.put("netBalance", BigDecimal.ZERO); // TODO Would need calculation
-        stats.put("totalPaid", BigDecimal.ZERO); // TODO Would need calculation
-        stats.put("pendingAmount", pendingAmount);
+        // Calculate financial statistics
+        // Amount user owes to others (user is payer)
+        BigDecimal totalOwed = settleUpService.getPendingAmountByUser(userId);
+        // Amount others owe to user (user is payee)
+        BigDecimal totalOwing = getPendingAmountOwedToUser(userId);
+        // Net balance (positive = user is owed, negative = user owes)
+        BigDecimal netBalance = totalOwing.subtract(totalOwed);
+        // Total amount user has paid in completed settlements
+        BigDecimal totalPaid = getTotalPaidByUser(userId);
+
+        stats.put("totalOwed", totalOwed);
+        stats.put("totalOwing", totalOwing);
+        stats.put("netBalance", netBalance);
+        stats.put("totalPaid", totalPaid);
 
         return stats;
     }
@@ -240,5 +254,31 @@ public class DashboardService {
         response.put("count", activityResponses.size());
 
         return response;
+    }
+
+    /**
+     * Helper method to get pending amount owed to a user (where user is payee)
+     */
+    private BigDecimal getPendingAmountOwedToUser(Long userId) {
+        List<SettleUp> pendingSettlements = settleUpService.getPendingSettlements(userId);
+
+        return pendingSettlements.stream()
+                .filter(settlement -> settlement.getPayee().getId().equals(userId))
+                .map(SettleUp::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Helper method to get total amount paid by user in completed settlements
+     */
+    private BigDecimal getTotalPaidByUser(Long userId) {
+        return settleUpService.getTotalAmountSettledByUser(userId);
+    }
+
+    /**
+     * Helper method to get total amount received by user in completed settlements
+     */
+    private BigDecimal getTotalReceivedByUser(Long userId) {
+        return settleUpService.getTotalAmountReceivedByUser(userId);
     }
 }

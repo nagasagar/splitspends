@@ -6,18 +6,19 @@ import 'package:splitspends_flutter/features/auth/data/models/auth_response.dart
 import 'package:splitspends_flutter/features/auth/data/models/user.dart';
 import 'package:splitspends_flutter/features/users/data/users_repository.dart';
 
+import '../../../core/config/app_config.dart';
+
 // Provider for the repository
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
 });
 
 class AuthRepository {
-  static const String _baseUrl = 'http://localhost:8080/api/auth'; // Adjust as needed
 
   // LOGIN: Regular email/password
   Future<AuthResponse> login(String email, String password) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/login'),
+      Uri.parse('${AppConfig.apiBaseUrl}/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'password': password}),
     );
@@ -39,7 +40,7 @@ class AuthRepository {
   // LOGIN: Google SSO
   Future<AuthResponse> loginWithGoogle(String idToken) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/google'),
+      Uri.parse('${AppConfig.apiBaseUrl}/auth/google'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'idToken': idToken}),
     );
@@ -63,7 +64,7 @@ class AuthRepository {
   // SIGNUP
   Future<AuthResponse> signup(String name, String email, String password) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/signup'),
+      Uri.parse('${AppConfig.apiBaseUrl}/auth/signup'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'name': name, 'email': email, 'password': password}),
     );

@@ -10,8 +10,8 @@ public interface SettleUpService {
     /**
      * Create a new settlement between two users.
      */
-    SettleUp createSettlement(Long groupId, Long payerId, Long payeeId, BigDecimal amount, 
-                            String description, SettleUp.PaymentMethod paymentMethod);
+    SettleUp createSettlement(Long groupId, Long payerId, Long payeeId, BigDecimal amount,
+            String description, SettleUp.PaymentMethod paymentMethod);
 
     /**
      * Confirm a pending settlement.
@@ -42,6 +42,11 @@ public interface SettleUpService {
      * Get total amount settled by a user.
      */
     BigDecimal getTotalAmountSettledByUser(Long userId);
+
+    /**
+     * Get total amount received by a user.
+     */
+    BigDecimal getTotalAmountReceivedByUser(Long userId);
 
     /**
      * Get pending settlement amount for a user.

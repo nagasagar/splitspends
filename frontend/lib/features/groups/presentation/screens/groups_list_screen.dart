@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../auth/provider/auth_provider.dart';
+import '../../data/repositories/group_repository.dart';
+
 class GroupsListScreen extends ConsumerStatefulWidget {
   const GroupsListScreen({super.key});
 
@@ -11,70 +14,45 @@ class GroupsListScreen extends ConsumerStatefulWidget {
 
 class _GroupsListScreenState extends ConsumerState<GroupsListScreen> {
   String _selectedFilter = 'all';
+  List<Map<String, dynamic>> _groups = [];
+  bool _isLoading = false;
 
-  // Mock groups data
-  final List<Map<String, dynamic>> _groups = [
-    {
-      'id': '1',
-      'name': 'Trip to Goa',
-      'description': 'Beach vacation with friends',
-      'memberCount': 4,
-      'totalExpenses': 12500.0,
-      'userBalance': -2400.0, // User owes money
-      'lastActivity': 'Today',
-      'isActive': true,
-      'imageUrl': null,
-      'category': 'Travel',
-    },
-    {
-      'id': '2',
-      'name': 'Office Lunch',
-      'description': 'Daily office lunch expenses',
-      'memberCount': 8,
-      'totalExpenses': 3200.0,
-      'userBalance': 150.0, // User is owed money
-      'lastActivity': 'Yesterday',
-      'isActive': true,
-      'imageUrl': null,
-      'category': 'Food',
-    },
-    {
-      'id': '3',
-      'name': 'Apartment Rent',
-      'description': 'Monthly apartment expenses',
-      'memberCount': 3,
-      'totalExpenses': 45000.0,
-      'userBalance': 0.0, // All settled
-      'lastActivity': '1 week ago',
-      'isActive': true,
-      'imageUrl': null,
-      'category': 'Housing',
-    },
-    {
-      'id': '4',
-      'name': 'Movie Night',
-      'description': 'Weekend movie and snacks',
-      'memberCount': 6,
-      'totalExpenses': 1800.0,
-      'userBalance': -300.0,
-      'lastActivity': '2 weeks ago',
-      'isActive': false,
-      'imageUrl': null,
-      'category': 'Entertainment',
-    },
-    {
-      'id': '5',
-      'name': 'Birthday Party',
-      'description': 'Sarah\'s birthday celebration',
-      'memberCount': 12,
-      'totalExpenses': 8500.0,
-      'userBalance': 425.0,
-      'lastActivity': '1 month ago',
-      'isActive': false,
-      'imageUrl': null,
-      'category': 'Celebration',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Delay _loadGroups to ensure context and providers are ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadGroups();
+    });
+  }
+
+  Future<void> _loadGroups() async {
+    final authState = ref.read(authProvider);
+    if (authState.user == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final groupRepository = ref.read(groupRepositoryProvider);
+      final groups = await groupRepository.getUserGroups(authState.user!.id.toString());
+
+      setState(() {
+        _groups = groups;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading groups: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,133 +69,161 @@ class _GroupsListScreenState extends ConsumerState<GroupsListScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadGroups,
+          ),
+          IconButton(
             icon: const Icon(Icons.search),
             onPressed: () => _showSearchDialog(context),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Filter Chips
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadGroups,
+              child: Column(
                 children: [
-                  _buildFilterChip('All', 'all'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Active', 'active'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Settled', 'settled'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('I owe', 'i_owe'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('I\'m owed', 'im_owed'),
+                  // Filter Chips
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFilterChip('All', 'all'),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Active', 'active'),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Settled', 'settled'),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('I owe', 'i_owe'),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('I\'m owed', 'im_owed'),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Groups Stats Card
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.teal[400]!, Colors.teal[600]!],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Total Groups',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                '${_groups.length}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Active Groups',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                '${_groups.where((g) => g['isActive']).length}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Net Balance',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                _getNetBalanceText(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Groups List
+                  Expanded(
+                    child: filteredGroups.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.group, size: 64, color: Colors.grey),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No groups found',
+                                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Create a new group to get started',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: filteredGroups.length,
+                            itemBuilder: (context, index) {
+                              final group = filteredGroups[index];
+                              return _buildGroupItem(group);
+                            },
+                          ),
+                  ),
                 ],
               ),
             ),
-          ),
-
-          // Groups Stats Card
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.teal[400]!, Colors.teal[600]!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Total Groups',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        '${_groups.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Active Groups',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        '${_groups.where((g) => g['isActive']).length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        'Net Balance',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        _getNetBalanceText(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Groups List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: filteredGroups.length,
-              itemBuilder: (context, index) {
-                final group = filteredGroups[index];
-                return _buildGroupItem(group);
-              },
-            ),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/groups/create'),
         backgroundColor: Colors.teal[600],

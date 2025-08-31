@@ -1,18 +1,18 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../dashboard/data/models/dashboard_models.dart';
 import '../models/group_models.dart';
 
 class GroupsRepository {
   final Dio _dio;
-  static const String baseUrl = 'http://localhost:8080';
 
   GroupsRepository(this._dio);
 
   Future<List<GroupSummary>> getUserGroups(String userId) async {
     try {
-      final response = await _dio.get('$baseUrl/api/groups/user/$userId');
+      final response = await _dio.get('${AppConfig.apiBaseUrl}/groups/user/$userId');
       final List<dynamic> data = response.data;
       return data.map((item) => GroupSummary.fromJson(item)).toList();
     } catch (e) {
@@ -48,7 +48,7 @@ class GroupsRepository {
 
   Future<GroupDetails> getGroupDetails(String groupId) async {
     try {
-      final response = await _dio.get('$baseUrl/api/groups/$groupId');
+      final response = await _dio.get('${AppConfig.apiBaseUrl}/groups/$groupId');
       return GroupDetails.fromJson(response.data);
     } catch (e) {
       // Return mock data
@@ -108,7 +108,7 @@ class GroupsRepository {
             currency: 'USD',
             paidById: '2',
             paidByName: 'Jane Smith',
-            splitAmongIds: ['1', '2', '3', '4'],
+            splitAmongIds: const ['1', '2', '3', '4'],
             createdAt: DateTime.now().subtract(const Duration(hours: 4)),
             isSettled: true,
           ),
@@ -134,7 +134,7 @@ class GroupsRepository {
   Future<GroupDetails> createGroup(CreateGroupRequest request) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/api/groups',
+        '${AppConfig.apiBaseUrl}/groups',
         data: request.toJson(),
       );
       return GroupDetails.fromJson(response.data);
@@ -154,7 +154,7 @@ class GroupsRepository {
             joinedAt: DateTime.now(),
           ),
         ],
-        expenses: [],
+        expenses: const [],
         createdAt: DateTime.now(),
         createdById: '1',
       );
@@ -164,7 +164,7 @@ class GroupsRepository {
   Future<GroupMember> addMember(String groupId, AddMemberRequest request) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/api/groups/$groupId/members',
+        '${AppConfig.apiBaseUrl}/groups/$groupId/members',
         data: request.toJson(),
       );
       return GroupMember.fromJson(response.data);
@@ -182,7 +182,7 @@ class GroupsRepository {
 
   Future<void> removeMember(String groupId, String memberId) async {
     try {
-      await _dio.delete('$baseUrl/api/groups/$groupId/members/$memberId');
+      await _dio.delete('${AppConfig.apiBaseUrl}/groups/$groupId/members/$memberId');
     } catch (e) {
       // Mock success
     }
@@ -190,7 +190,7 @@ class GroupsRepository {
 
   Future<void> makeAdmin(String groupId, String memberId) async {
     try {
-      await _dio.patch('$baseUrl/api/groups/$groupId/members/$memberId/admin');
+      await _dio.patch('${AppConfig.apiBaseUrl}/groups/$groupId/members/$memberId/admin');
     } catch (e) {
       // Mock success
     }
@@ -199,7 +199,7 @@ class GroupsRepository {
   Future<GroupExpense> createExpense(CreateExpenseRequest request) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/api/expenses',
+        '${AppConfig.apiBaseUrl}/expenses',
         data: request.toJson(),
       );
       return GroupExpense.fromJson(response.data);
@@ -222,7 +222,7 @@ class GroupsRepository {
 
   Future<void> updateGroup(String groupId, Map<String, dynamic> updates) async {
     try {
-      await _dio.patch('$baseUrl/api/groups/$groupId', data: updates);
+      await _dio.patch('${AppConfig.apiBaseUrl}/groups/$groupId', data: updates);
     } catch (e) {
       // Mock success
     }
@@ -230,7 +230,7 @@ class GroupsRepository {
 
   Future<void> deleteGroup(String groupId) async {
     try {
-      await _dio.delete('$baseUrl/api/groups/$groupId');
+      await _dio.delete('${AppConfig.apiBaseUrl}/groups/$groupId');
     } catch (e) {
       // Mock success
     }
@@ -238,7 +238,7 @@ class GroupsRepository {
 
   Future<void> leaveGroup(String groupId, String userId) async {
     try {
-      await _dio.delete('$baseUrl/api/groups/$groupId/members/$userId');
+      await _dio.delete('${AppConfig.apiBaseUrl}/groups/$groupId/members/$userId');
     } catch (e) {
       // Mock success
     }

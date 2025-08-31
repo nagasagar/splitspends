@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/logging/app_logger.dart';
 import '../provider/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -92,7 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
-                    print('Sign up pressed'); // <-- Add this
+                    AppLogger.debug('Sign up pressed', tag: 'Auth'); // <-- Add this
                     context.go('/signup');
                   },
                   child: const Text('Don\'t have an account? Sign up'),

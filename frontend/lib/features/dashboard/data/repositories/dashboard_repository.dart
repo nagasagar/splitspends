@@ -1,18 +1,73 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/config/app_config.dart';
+import '../../../../core/logging/app_logger.dart';
 import '../models/dashboard_models.dart';
 
 class DashboardRepository {
   final Dio _dio;
-  static const String baseUrl = 'http://localhost:8080';
 
   DashboardRepository(this._dio);
 
   Future<DashboardData> getDashboardData(String userId) async {
     try {
-      final response = await _dio.get('$baseUrl/api/dashboard/data/$userId');
-      return DashboardData.fromJson(response.data);
+      // Use the flexible dashboard endpoint which combines multiple data sources
+      final response = await _dio.get(
+        '${AppConfig.apiBaseUrl}/dashboard/flexible/$userId',
+        queryParameters: {
+          'include': 'stats,groups,expenses,settlements,activities',
+          'limit': 10,
+        },
+      );
+
+      final data = response.data;
+
+      // Extract dashboard summary from the flexible response
+      final userSummary = data['userSummary'] ?? {};
+      final financialSummary = data['financialSummary'] ?? {};
+
+      final summary = DashboardSummary(
+        totalOwed: (financialSummary['totalOwed'] as num?)?.toDouble() ?? 0.0,
+        totalToReceive: (financialSummary['totalOwing'] as num?)?.toDouble() ?? 0.0,
+        groupCount: userSummary['totalGroups'] as int? ?? 0,
+        expenseCount: userSummary['totalExpenses'] as int? ?? 0,
+        monthlySpending: (financialSummary['totalPaid'] as num?)?.toDouble() ?? 0.0,
+      );
+
+      // Extract recent activities
+      final activitiesData = data['recentActivities'] as List<dynamic>? ?? [];
+      final activities = activitiesData
+          .map((item) => RecentActivity(
+                id: item['id'].toString(),
+                type: _mapActionToType(item['action'] ?? 'activity'),
+                description: item['description'] as String? ?? '',
+                timestamp: DateTime.tryParse(item['createdAt'] as String? ?? '') ?? DateTime.now(),
+                amount: (item['amount'] as num?)?.toDouble(),
+                groupName: item['groupName'] as String?,
+                currency: item['currency'] as String?,
+              ))
+          .toList();
+
+      // Extract groups
+      final groupsData = data['userGroups'] as List<dynamic>? ?? [];
+      final groups = groupsData
+          .map((item) => GroupSummary(
+                id: item['id'].toString(),
+                name: item['name'] as String? ?? '',
+                description: item['description'] as String?,
+                memberCount: item['memberCount'] as int? ?? 0,
+                userBalance: (item['userBalance'] as num?)?.toDouble() ?? 0.0,
+                groupImageUrl: item['groupImageUrl'] as String?,
+                lastActivity: DateTime.tryParse(item['updatedAt'] as String? ?? '') ?? DateTime.now(),
+              ))
+          .toList();
+
+      return DashboardData(
+        summary: summary,
+        recentActivities: activities,
+        groups: groups,
+      );
     } catch (e) {
       // Fallback: get data separately if combined endpoint fails
       final summary = await getDashboardSummary(userId);
@@ -29,12 +84,12 @@ class DashboardRepository {
 
   Future<DashboardSummary> getDashboardSummary(String userId) async {
     try {
-      final response = await _dio.get('$baseUrl/api/dashboard/summary/$userId');
+      final response = await _dio.get('${AppConfig.apiBaseUrl}/dashboard/summary/$userId');
       final data = response.data;
 
       // Map backend response to frontend model
-      final userSummary = data['userSummary'];
-      final financialSummary = data['financialSummary'];
+      final userSummary = data['userSummary'] ?? {};
+      final financialSummary = data['financialSummary'] ?? {};
 
       return DashboardSummary(
         totalOwed: (financialSummary['totalOwed'] as num?)?.toDouble() ?? 0.0,
@@ -44,13 +99,14 @@ class DashboardRepository {
         monthlySpending: (financialSummary['totalPaid'] as num?)?.toDouble() ?? 0.0,
       );
     } catch (e) {
-      // Return mock data for now
+      AppLogger.repositoryError('DashboardRepository', 'getDashboardSummary', e);
+      // Return empty data instead of mock data on error
       return const DashboardSummary(
-        totalOwed: 150.75,
-        totalToReceive: 45.50,
-        groupCount: 3,
-        expenseCount: 12,
-        monthlySpending: 890.25,
+        totalOwed: 0.0,
+        totalToReceive: 0.0,
+        groupCount: 0,
+        expenseCount: 0,
+        monthlySpending: 0.0,
       );
     }
   }
@@ -58,7 +114,7 @@ class DashboardRepository {
   Future<List<RecentActivity>> getRecentActivities(String userId, {int limit = 10}) async {
     try {
       final response = await _dio.get(
-        '$baseUrl/api/activities/user/$userId',
+        '${AppConfig.apiBaseUrl}/activities/user/$userId',
         queryParameters: {'limit': limit},
       );
       final List<dynamic> data = response.data;
@@ -66,45 +122,18 @@ class DashboardRepository {
       return data
           .map((item) => RecentActivity(
                 id: item['id'].toString(),
-                type: _mapActionToType(item['action']),
-                description: item['description'] as String,
-                timestamp: DateTime.parse(item['createdAt'] as String),
-                amount: null, // Activity logs don't have amounts directly
+                type: _mapActionToType(item['action'] ?? 'activity'),
+                description: item['description'] as String? ?? '',
+                timestamp: DateTime.tryParse(item['createdAt'] as String? ?? '') ?? DateTime.now(),
+                amount: (item['amount'] as num?)?.toDouble(),
                 groupName: item['groupName'] as String?,
-                currency: null,
+                currency: item['currency'] as String?,
               ))
           .toList();
     } catch (e) {
-      // Return mock data for now
-      return [
-        RecentActivity(
-          id: '1',
-          type: 'expense_added',
-          description: 'Dinner at Pizza Palace',
-          timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-          amount: 45.50,
-          groupName: 'Friends',
-          currency: 'USD',
-        ),
-        RecentActivity(
-          id: '2',
-          type: 'settlement_completed',
-          description: 'You settled up with John',
-          timestamp: DateTime.now().subtract(const Duration(days: 1)),
-          amount: 25.00,
-          groupName: 'Work',
-          currency: 'USD',
-        ),
-        RecentActivity(
-          id: '3',
-          type: 'expense_added',
-          description: 'Grocery shopping',
-          timestamp: DateTime.now().subtract(const Duration(days: 2)),
-          amount: 85.30,
-          groupName: 'Roommates',
-          currency: 'USD',
-        ),
-      ];
+      AppLogger.repositoryError('DashboardRepository', 'getRecentActivities', e);
+      // Return empty list instead of mock data
+      return [];
     }
   }
 
@@ -135,48 +164,24 @@ class DashboardRepository {
 
   Future<List<GroupSummary>> getUserGroups(String userId) async {
     try {
-      final response = await _dio.get('$baseUrl/api/groups/user/$userId');
+      final response = await _dio.get('${AppConfig.apiBaseUrl}/groups/user/$userId');
       final List<dynamic> data = response.data;
       
       return data
           .map((item) => GroupSummary(
                 id: item['id'].toString(),
-                name: item['name'] as String,
+                name: item['name'] as String? ?? '',
                 description: item['description'] as String?,
                 memberCount: item['memberCount'] as int? ?? 0,
-                userBalance: 0.0, // Would need additional calculation from backend
+                userBalance: (item['userBalance'] as num?)?.toDouble() ?? 0.0,
                 groupImageUrl: item['groupImageUrl'] as String?,
-                lastActivity: DateTime.parse(item['updatedAt'] as String),
+                lastActivity: DateTime.tryParse(item['updatedAt'] as String? ?? '') ?? DateTime.now(),
               ))
           .toList();
     } catch (e) {
-      // Return mock data for now
-      return [
-        GroupSummary(
-          id: '1',
-          name: 'Friends',
-          description: 'Weekend hangouts',
-          memberCount: 4,
-          userBalance: -25.50,
-          lastActivity: DateTime.now().subtract(const Duration(hours: 2)),
-        ),
-        GroupSummary(
-          id: '2',
-          name: 'Work Team',
-          description: 'Office expenses',
-          memberCount: 6,
-          userBalance: 15.75,
-          lastActivity: DateTime.now().subtract(const Duration(days: 1)),
-        ),
-        GroupSummary(
-          id: '3',
-          name: 'Roommates',
-          description: 'Shared apartment costs',
-          memberCount: 3,
-          userBalance: -45.25,
-          lastActivity: DateTime.now().subtract(const Duration(days: 2)),
-        ),
-      ];
+      AppLogger.repositoryError('DashboardRepository', 'getUserGroups', e);
+      // Return empty list instead of mock data
+      return [];
     }
   }
 }

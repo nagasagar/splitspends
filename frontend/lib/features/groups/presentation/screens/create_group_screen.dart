@@ -42,7 +42,7 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
       final request = CreateGroupRequest(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
-        memberEmails: [], // Start with empty list, add members later
+        memberEmails: const [], // Start with empty list, add members later
       );
 
       final newGroup = await ref.read(groupsProvider.notifier).createGroup(request);

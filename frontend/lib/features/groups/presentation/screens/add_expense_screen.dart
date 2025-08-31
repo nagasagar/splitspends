@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,7 +64,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         description: 'Personal expenses not tied to a specific group',
         createdAt: DateTime.now(),
         createdById: '1',
-        expenses: [],
+        expenses: const [],
         members: [
           GroupMember(
             id: '1',
@@ -79,7 +81,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         description: 'Beach vacation with friends',
         createdAt: DateTime.now().subtract(const Duration(days: 30)),
         createdById: '1',
-        expenses: [],
+        expenses: const [],
         members: [
           GroupMember(
             id: '1',
@@ -117,7 +119,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         description: 'Weekly office lunch group',
         createdAt: DateTime.now().subtract(const Duration(days: 60)),
         createdById: '1',
-        expenses: [],
+        expenses: const [],
         members: [
           GroupMember(
             id: '1',
@@ -155,7 +157,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         description: 'Shared apartment expenses',
         createdAt: DateTime.now().subtract(const Duration(days: 90)),
         createdById: '1',
-        expenses: [],
+        expenses: const [],
         members: [
           GroupMember(
             id: '1',
@@ -600,7 +602,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text('Split ${_amountController.text} ${_currency}'),
+          title: Text('Split ${_amountController.text} $_currency'),
           content: SizedBox(
             width: double.maxFinite,
             height: 400,
@@ -1220,8 +1222,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                       if (_splitAmongIds.isNotEmpty)
                         TextButton.icon(
                           onPressed: () => _showSplitDetailsDialog(),
-                          icon: Icon(Icons.tune, size: 18),
-                          label: Text('Split Options'),
+                          icon: const Icon(Icons.tune, size: 18),
+                          label: const Text('Split Options'),
                           style: TextButton.styleFrom(
                             foregroundColor: theme.colorScheme.primary,
                           ),

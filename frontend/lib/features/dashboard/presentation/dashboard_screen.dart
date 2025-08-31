@@ -484,7 +484,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     } else if (activity.groupName != null) {
       // If we have group name but no specific expense, navigate to group
       // In a real app, you'd have a group ID
-      final groupId = '1'; // This would come from activity.groupId
+      const groupId = '1'; // This would come from activity.groupId
       context.push('/groups/$groupId');
     }
   }

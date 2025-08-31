@@ -153,6 +153,13 @@ public class SettleUpServiceImpl implements SettleUpService {
         }
 
         @Override
+        public BigDecimal getTotalAmountReceivedByUser(Long userId) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+                return settleUpRepository.getTotalReceivedByUser(user);
+        }
+
+        @Override
         public BigDecimal getPendingAmountByUser(Long userId) {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new RuntimeException("User not found"));

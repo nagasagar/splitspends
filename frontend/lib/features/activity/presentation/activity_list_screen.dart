@@ -1,6 +1,11 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../auth/provider/auth_provider.dart';
+import '../data/repositories/activity_repository.dart';
 
 class ActivityListScreen extends ConsumerStatefulWidget {
   const ActivityListScreen({super.key});
@@ -11,110 +16,41 @@ class ActivityListScreen extends ConsumerStatefulWidget {
 
 class _ActivityListScreenState extends ConsumerState<ActivityListScreen> {
   String _selectedFilter = 'all';
+  List<Map<String, dynamic>> _activities = [];
+  bool _isLoading = true;
 
-  // Mock activity data
-  final List<Map<String, dynamic>> _activities = [
-    {
-      'id': '1',
-      'type': 'expense_added',
-      'title': 'Dinner at Restaurant',
-      'description': 'Added expense "Dinner at Restaurant" (Split equally among 3 people)',
-      'amount': 1200.0,
-      'timestamp': DateTime.now().subtract(const Duration(hours: 2)),
-      'userName': 'John Doe',
-      'groupName': 'Trip to Goa',
-      'category': 'food',
-      'isUserAction': false,
-      'splitType': 'equal',
-      'participantCount': 3,
-    },
-    {
-      'id': '2',
-      'type': 'settlement_completed',
-      'title': 'Settlement Received',
-      'description': 'Received ₹350 from Jane Smith',
-      'amount': 350.0,
-      'timestamp': DateTime.now().subtract(const Duration(hours: 5)),
-      'userName': 'Jane Smith',
-      'groupName': 'Trip to Goa',
-      'category': 'settlement',
-      'isUserAction': false,
-    },
-    {
-      'id': '3',
-      'type': 'expense_added',
-      'title': 'Movie Tickets',
-      'description': 'You added expense "Movie Tickets" (Custom split among 4 people)',
-      'amount': 900.0,
-      'timestamp': DateTime.now().subtract(const Duration(days: 1)),
-      'userName': 'You',
-      'groupName': 'Office Lunch',
-      'category': 'entertainment',
-      'isUserAction': true,
-      'splitType': 'custom',
-      'participantCount': 4,
-    },
-    {
-      'id': '4',
-      'type': 'group_created',
-      'title': 'Group Created',
-      'description': 'You created group "Office Lunch"',
-      'amount': null,
-      'timestamp': DateTime.now().subtract(const Duration(days: 1, hours: 3)),
-      'userName': 'You',
-      'groupName': 'Office Lunch',
-      'category': 'group',
-      'isUserAction': true,
-    },
-    {
-      'id': '5',
-      'type': 'member_added',
-      'title': 'Member Added',
-      'description': 'Bob Wilson was added to "Office Lunch"',
-      'amount': null,
-      'timestamp': DateTime.now().subtract(const Duration(days: 2)),
-      'userName': 'Sarah Wilson',
-      'groupName': 'Office Lunch',
-      'category': 'group',
-      'isUserAction': false,
-    },
-    {
-      'id': '6',
-      'type': 'expense_edited',
-      'title': 'Expense Updated',
-      'description': 'Hotel Booking expense was updated',
-      'amount': 4500.0,
-      'timestamp': DateTime.now().subtract(const Duration(days: 3)),
-      'userName': 'Jane Smith',
-      'groupName': 'Trip to Goa',
-      'category': 'accommodation',
-      'isUserAction': false,
-    },
-    {
-      'id': '7',
-      'type': 'settlement_completed',
-      'title': 'Settlement Made',
-      'description': 'You paid ₹200 to Mike Johnson',
-      'amount': 200.0,
-      'timestamp': DateTime.now().subtract(const Duration(days: 4)),
-      'userName': 'You',
-      'groupName': null,
-      'category': 'settlement',
-      'isUserAction': true,
-    },
-    {
-      'id': '8',
-      'type': 'expense_deleted',
-      'title': 'Expense Deleted',
-      'description': 'Coffee expense was deleted',
-      'amount': 150.0,
-      'timestamp': DateTime.now().subtract(const Duration(days: 5)),
-      'userName': 'You',
-      'groupName': 'Office Lunch',
-      'category': 'food',
-      'isUserAction': true,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadActivities();
+  }
+
+  Future<void> _loadActivities() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final authState = ref.read(authProvider);
+      if (authState.isAuthenticated) {
+        final activityRepository = ref.read(activityRepositoryProvider);
+        final activities = await activityRepository.getUserActivities(
+          authState.user!.id.toString(),
+          limit: 50,
+        );
+
+        setState(() {
+          _activities = activities;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _activities = [];
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,37 +72,41 @@ class _ActivityListScreenState extends ConsumerState<ActivityListScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Filter Chips
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadActivities,
+              child: Column(
                 children: [
-                  _buildFilterChip('All', 'all'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('My Actions', 'my_actions'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Expenses', 'expenses'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Settlements', 'settlements'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Groups', 'groups'),
-                ],
-              ),
-            ),
-          ),
+                  // Filter Chips
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFilterChip('All', 'all'),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('My Actions', 'my_actions'),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Expenses', 'expenses'),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Settlements', 'settlements'),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Groups', 'groups'),
+                        ],
+                      ),
+                    ),
+                  ),
 
-          // Activity Stats Card
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.indigo[400]!, Colors.indigo[600]!],
-                begin: Alignment.topLeft,
+                  // Activity Stats Card
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.indigo[400]!, Colors.indigo[600]!],
+                        begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -245,55 +185,75 @@ class _ActivityListScreenState extends ConsumerState<ActivityListScreen> {
 
           const SizedBox(height: 16),
 
-          // Activities List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: filteredActivities.length,
-              itemBuilder: (context, index) {
-                final activity = filteredActivities[index];
-                final isToday = _isToday(activity['timestamp']);
-                final isYesterday = _isYesterday(activity['timestamp']);
-                
-                // Show date header if needed
-                bool showDateHeader = false;
-                if (index == 0) {
-                  showDateHeader = true;
-                } else {
-                  final prevActivity = filteredActivities[index - 1];
-                  final prevDate = _getDateString(prevActivity['timestamp']);
-                  final currentDate = _getDateString(activity['timestamp']);
-                  showDateHeader = prevDate != currentDate;
-                }
+                  // Activities List
+                  Expanded(
+                    child: filteredActivities.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.history, size: 64, color: Colors.grey),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No activity found',
+                                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Start adding expenses to see activity',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: filteredActivities.length,
+                            itemBuilder: (context, index) {
+                              final activity = filteredActivities[index];
+                              final isToday = _isToday(activity['timestamp']);
+                              final isYesterday = _isYesterday(activity['timestamp']);
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (showDateHeader) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 16, bottom: 8),
-                        child: Text(
-                          isToday
-                              ? 'Today'
-                              : isYesterday
-                                  ? 'Yesterday'
-                                  : _getDateString(activity['timestamp']),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[700],
+                              // Show date header if needed
+                              bool showDateHeader = false;
+                              if (index == 0) {
+                                showDateHeader = true;
+                              } else {
+                                final prevActivity = filteredActivities[index - 1];
+                                final prevDate = _getDateString(prevActivity['timestamp']);
+                                final currentDate = _getDateString(activity['timestamp']);
+                                showDateHeader = prevDate != currentDate;
+                              }
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (showDateHeader) ...[
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8, top: 16, bottom: 8),
+                                      child: Text(
+                                        isToday
+                                            ? 'Today'
+                                            : isYesterday
+                                                ? 'Yesterday'
+                                                : _getDateString(activity['timestamp']),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  _buildActivityItem(activity),
+                                ],
+                              );
+                            },
                           ),
-                        ),
-                      ),
-                    ],
-                    _buildActivityItem(activity),
-                  ],
-                );
-              },
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -516,7 +476,7 @@ class _ActivityListScreenState extends ConsumerState<ActivityListScreen> {
     } else if (difference == 1) {
       return 'Yesterday';
     } else if (difference < 7) {
-      return '${difference} days ago';
+      return '$difference days ago';
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }

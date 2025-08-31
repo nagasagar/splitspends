@@ -1,6 +1,11 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../auth/provider/auth_provider.dart';
+import '../data/repositories/expense_repository.dart';
 
 class ExpensesListScreen extends ConsumerStatefulWidget {
   const ExpensesListScreen({super.key});
@@ -12,71 +17,38 @@ class ExpensesListScreen extends ConsumerStatefulWidget {
 class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
   String _selectedFilter = 'all';
   String _sortBy = 'date';
+  List<Map<String, dynamic>> _expenses = [];
+  bool _isLoading = true;
 
-  // Mock expenses data
-  final List<Map<String, dynamic>> _expenses = [
-    {
-      'id': 'expense_1',
-      'description': 'Dinner at Restaurant',
-      'amount': 1200.0,
-      'category': 'Food',
-      'date': 'Today',
-      'paidBy': 'John Doe',
-      'groupName': 'Trip to Goa',
-      'userShare': 400.0,
-      'isPaidByUser': false,
-      'splitType': 'equal',
-      'participantCount': 3,
-    },
-    {
-      'id': 'expense_2',
-      'description': 'Movie Tickets',
-      'amount': 900.0,
-      'category': 'Entertainment',
-      'date': 'Yesterday',
-      'paidBy': 'You',
-      'groupName': 'Office Lunch',
-      'userShare': 200.0,
-      'isPaidByUser': true,
-      'splitType': 'custom',
-      'participantCount': 4,
-    },
-    {
-      'id': 'expense_3',
-      'description': 'Apartment Rent',
-      'amount': 3000.0,
-      'category': 'Utilities',
-      'date': '2 days ago',
-      'paidBy': 'Sarah Connor',
-      'groupName': 'Roommates',
-      'userShare': 900.0,
-      'isPaidByUser': false,
-      'splitType': 'percentage',
-      'participantCount': 3,
-    },
-    {
-      'id': '4',
-      'description': 'Coffee Shop',
-      'amount': 280.0,
-      'category': 'Food',
-      'date': '3 days ago',
-      'paidBy': 'You',
-      'groupName': 'Office Lunch',
-      'userShare': 140.0,
-      'isPaidByUser': true,
-    },
-    {
-      'id': '5',
-      'description': 'Movie Tickets',
-      'amount': 600.0,
-      'category': 'Entertainment',
-      'date': '1 week ago',
-      'paidBy': 'Bob Wilson',
-      'groupName': null,
-      'userShare': 300.0,
-      'isPaidByUser': false,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadExpenses();
+  }
+
+  Future<void> _loadExpenses() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final authState = ref.read(authProvider);
+      if (authState.isAuthenticated) {
+        final expenseRepository = ref.read(expenseRepositoryProvider);
+        final expenses = await expenseRepository.getUserExpenses(authState.user!.id.toString());
+
+        setState(() {
+          _expenses = expenses;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _expenses = [];
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,12 +88,16 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Filter Chips
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadExpenses,
+              child: Column(
+                children: [
+                  // Filter Chips
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
@@ -203,19 +179,39 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
 
           const SizedBox(height: 16),
 
-          // Expenses List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: filteredExpenses.length,
-              itemBuilder: (context, index) {
-                final expense = filteredExpenses[index];
-                return _buildExpenseItem(expense);
-              },
+                  // Expenses List
+                  Expanded(
+                    child: filteredExpenses.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.receipt, size: 64, color: Colors.grey),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No expenses found',
+                                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Add your first expense to get started',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: filteredExpenses.length,
+                            itemBuilder: (context, index) {
+                              final expense = filteredExpenses[index];
+                              return _buildExpenseItem(expense);
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/expenses/create'),
         backgroundColor: Colors.purple[600],

@@ -1,56 +1,75 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class YouOweScreen extends ConsumerWidget {
+import '../../auth/provider/auth_provider.dart';
+import '../data/repositories/balance_repository.dart';
+
+class YouOweScreen extends ConsumerStatefulWidget {
   const YouOweScreen({super.key});
 
-  // Mock data for people you owe money to
-  final List<Map<String, dynamic>> _oweData = const [
-    {
-      'userId': '1',
-      'name': 'John Doe',
-      'email': 'john@example.com',
-      'amount': 2400.0,
-      'expenseCount': 3,
-      'lastExpense': 'Dinner at Restaurant',
-      'groupName': 'Trip to Goa',
-      'profileColor': Colors.blue,
-    },
-    {
-      'userId': '2',
-      'name': 'Jane Smith',
-      'email': 'jane@example.com',
-      'amount': 1500.0,
-      'expenseCount': 2,
-      'lastExpense': 'Hotel Booking',
-      'groupName': 'Trip to Goa',
-      'profileColor': Colors.purple,
-    },
-    {
-      'userId': '3',
-      'name': 'Bob Wilson',
-      'email': 'bob@example.com',
-      'amount': 300.0,
-      'expenseCount': 1,
-      'lastExpense': 'Movie Tickets',
-      'groupName': null,
-      'profileColor': Colors.green,
-    },
-    {
-      'userId': '4',
-      'name': 'Alice Cooper',
-      'email': 'alice@example.com',
-      'amount': 125.0,
-      'expenseCount': 1,
-      'lastExpense': 'Coffee Shop',
-      'groupName': 'Office Lunch',
-      'profileColor': Colors.orange,
-    },
-  ];
+  @override
+  ConsumerState<YouOweScreen> createState() => _YouOweScreenState();
+}
+
+class _YouOweScreenState extends ConsumerState<YouOweScreen> {
+  List<Map<String, dynamic>> _oweData = [];
+  bool _isLoading = true;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    _loadBalanceData();
+  }
+
+  Future<void> _loadBalanceData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final authState = ref.read(authProvider);
+      if (authState.isAuthenticated) {
+        final balanceRepository = ref.read(balanceRepositoryProvider);
+        final balances = await balanceRepository.getUserBalances(authState.user!.id.toString());
+
+        // Filter for debts (negative balances)
+        final debts = balances
+            .where((balance) => (balance['amount'] as double) < 0)
+            .map((balance) => {
+                  'userId': balance['userId'],
+                  'name': balance['userName'],
+                  'email': balance['userEmail'],
+                  'amount': -(balance['amount'] as double), // Make positive for display
+                  'expenseCount': balance['expenseCount'] ?? 1,
+                  'lastExpense': balance['lastExpense'] ?? 'Recent expense',
+                  'groupName': balance['groupName'],
+                  'profileColor': _getRandomColor(),
+                })
+            .toList();
+
+        setState(() {
+          _oweData = debts;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _oweData = [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  Color _getRandomColor() {
+    final colors = [Colors.blue, Colors.purple, Colors.green, Colors.orange, Colors.red, Colors.indigo];
+    return colors[DateTime.now().millisecond % colors.length];
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final totalOwed = _oweData.fold<double>(0.0, (sum, item) => sum + item['amount']);
 
     return Scaffold(
@@ -69,48 +88,52 @@ class YouOweScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Total Owed Card
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.red[400]!, Colors.red[600]!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.red.withOpacity(0.3),
-                  spreadRadius: 2,
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.account_balance_wallet,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Total Amount You Owe',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadBalanceData,
+              child: Column(
+                children: [
+                  // Total Owed Card
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.red[400]!, Colors.red[600]!],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
+                    child: Column(
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.account_balance_wallet,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              'Total Amount You Owe',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -133,19 +156,39 @@ class YouOweScreen extends ConsumerWidget {
             ),
           ),
 
-          // People List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _oweData.length,
-              itemBuilder: (context, index) {
-                final person = _oweData[index];
-                return _buildPersonCard(context, person);
-              },
+                  // People List
+                  Expanded(
+                    child: _oweData.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.check_circle, size: 64, color: Colors.green),
+                                SizedBox(height: 16),
+                                Text(
+                                  'You\'re all settled up!',
+                                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'You don\'t owe anyone money',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: _oweData.length,
+                            itemBuilder: (context, index) {
+                              final person = _oweData[index];
+                              return _buildPersonCard(context, person);
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/settle-up'),
         backgroundColor: Colors.green[600],
